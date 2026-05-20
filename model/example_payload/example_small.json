@@ -48,6 +48,12 @@
       "imaging_type": "Confocal Microscopy",
       "instrument": "(42) Olympus XYZ, 543 nm laser od QW, Hamamatsu ERTY kamera, etc",
       "additional_info": "10x objektiv, kdovijaky coverglass"
+    },
+
+    "poly_data": {
+      "ptype": "person",
+      "person_name": "normal text1",
+      "person_email": "normal text2"
     }
   }
 }

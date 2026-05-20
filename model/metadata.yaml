@@ -26,6 +26,14 @@ Metadata:
     image_acquisition:
       type: CZBIActivityImageAcquisition
       required: true
+    poly_data:
+      type: polymorphic
+      discriminator: ptype
+      oneof:
+        - discriminator: person
+          type: CZBI_Person
+        - discriminator: organization
+          type: CZBI_Organization
 # ------------------------------
     # TODO tohle jsem podedil z prikladu, nevim jestli to tam musi byt
     # (pravdepodobne CCMMko nahradi)
@@ -34,6 +42,23 @@ Metadata:
       items:
         type: vocabulary
         vocabulary-type: languages
+
+CZBI_Person:
+  type: object
+  properties:
+    person_name:
+      type: keyword
+    person_email:
+      type: keyword
+
+CZBI_Organization:
+  type: object
+  properties:
+    org_name:
+      type: keyword
+    org_addr:
+      type: keyword
+
 
 # Hints for Vlado:
 # keyword: exact-match, not broken into tokens, "as-is"
