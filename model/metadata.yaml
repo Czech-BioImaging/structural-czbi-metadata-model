@@ -3,12 +3,15 @@
 
 Metadata:
   properties:
-    # TODO
-    # UMITE NEKDO ZAPNOUT CCMMko? Mne to takto neslo:
-#   ccmm_baseline:
-#     type: ccmm_preset
-    # TODO tohle jsem podedil z prikladu, nevim jestli to tam musi byt
-    # (pravdepodobne CCMMko nahradi)
+    # CCMM is since v4.0.0 available implicitly, that said,
+    # I didn't have to mention it here, yet I could provide
+    # payload data according to CCMM specs (and Invenio didn't
+    # complained)
+    #
+    # PS: I created CCMM record first in the Invenio (in www
+    # GUI), and retrieved the record from there to learn about
+    # the .json structure...
+    #
     title:
       type: fulltext+keyword
 # ------------------------------
@@ -35,13 +38,6 @@ Metadata:
         - discriminator: organization
           type: CZBI_Organization
 # ------------------------------
-    # TODO tohle jsem podedil z prikladu, nevim jestli to tam musi byt
-    # (pravdepodobne CCMMko nahradi)
-    languages:
-      type: array
-      items:
-        type: vocabulary
-        vocabulary-type: languages
 
 CZBI_Person:
   type: object

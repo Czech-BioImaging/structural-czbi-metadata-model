@@ -7,18 +7,53 @@
     "enabled": false
   },
   "metadata": {
-    "title": "Vlado's record4",
-    "publication_date": "2026-03-10",
+    "title": "Foo2",
+    "publication_date": "2026-05-25",
     "resource_type": {
-      "id": "c_ddb1"
+      "id": "c_ddb1",
+      "title": {
+        "cs": "datová sada",
+        "en": "dataset"
+      }
     },
+    "identifiers": [
+      {
+        "identifier": "doi_cislo_as_jine_schema",
+        "scheme": "other"
+      }
+    ],
     "creators": [
       {
         "person_or_org": {
-          "family_name": "Brown",
-          "given_name": "Troy",
-          "type": "personal"
-        }
+          "type": "personal",
+          "name": "Aarrestad, Thea",
+          "given_name": "Thea",
+          "family_name": "Aarrestad",
+          "identifiers": [
+            {
+              "identifier": "0000-0002-7671-243X",
+              "scheme": "orcid"
+            }
+          ]
+        },
+        "affiliations": [
+          {
+            "name": "CERN"
+          }
+        ]
+      }
+    ],
+    "dates": [
+      {
+        "date": "2026-05-21",
+        "type": {
+          "id": "Available",
+          "title": {
+            "cs": "Datum zveřejnění datasetu",
+            "en": "Date Available"
+          }
+        },
+        "description": "dataset gone public"
       }
     ],
 
