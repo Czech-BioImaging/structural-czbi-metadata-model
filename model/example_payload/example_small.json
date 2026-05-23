@@ -51,7 +51,7 @@
     },
 
     "poly_data": {
-      "ptype": "person",
+      "type_hint": "person",
       "person_name": "normal text1",
       "person_email": "normal text2"
     }

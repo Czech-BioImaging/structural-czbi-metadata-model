@@ -28,7 +28,7 @@ Metadata:
       required: true
     poly_data:
       type: polymorphic
-      discriminator: ptype
+      discriminator: type_hint
       oneof:
         - discriminator: person
           type: CZBI_Person
@@ -46,6 +46,8 @@ Metadata:
 CZBI_Person:
   type: object
   properties:
+    type_hint: # must be here to make oarepo not to skip this required field during parsing
+      type: keyword
     person_name:
       type: keyword
     person_email:
@@ -54,6 +56,8 @@ CZBI_Person:
 CZBI_Organization:
   type: object
   properties:
+    type_hint: # must be here to make oarepo not to skip this required field during parsing
+      type: keyword
     org_name:
       type: keyword
     org_addr:
