@@ -1,15 +1,5 @@
-Resource is one of:
- - DigitalObject
- - BiogenicEntity
-  (- MaterialEntity -- not now)
- - ProcessingStep
-
-
--------------------------
--------------------------
-
-Identifier:
-- [ IdentifierAuthorized, <=1 ]   ?? meaning of this ??
+Identifier: (tento neni videt v GUI!)
+- [ IdentifierAuthorized, <=1 ]  -- (bool) Specifies whether the identifier is authorized by the subject it represents
 - [ IdentifierScheme, =1 ]   -- DOI, ePIC, atp.;
                              -- dovedu si predstavit i interni Invenio cislovani, tzn. Invenio ID;
                              -- nebo dokonce jenom localni cislovani v ramci jednoho Invenio recordu
@@ -20,36 +10,28 @@ Metadata:                    -- entry point
 - [ Identifier, >=0 ]        -- optional PID(s) za celek, za cely tento jeden record
 - [ Title, <=1 ]
 - [ AdditionalNote, >=0 ]
-- [ ThisRecordItem, >=1 ]    -- array of sub-records that make up this record, muze pouzivat "localni cislovani v ramci jednoho Invenio recordu";
-                                v podstate implicitni model
-nebo
-- [ DataCreatingProfile, >=1 ] -- array of Raw, Processed nebo Analysed;
-                                  v podstate explicitni model
-nebo
 - OneOf: [ RawDataProfile, >= 1 ], [ ProcessedDataProfile, >= 1 ], [ AnalysedDataProfile, >= 1 ]
                                -- jedno ze tri moznych mono-typovych arrays, explicitni model
+                               -- musi to ctit nemixovani profilu, tzn. record je 1+ items od stejneho profilu
+                               -- Invenio bude potrebovat "mezityp" kvuli tem arrays
 
----
-ThisRecordItem:
-- [ LocalIdentifier, =1 ]    -- optional PID(s) za dilci sub-recordy
-- OneOf: NonImageData, ImageData, ProcessingStep, ProcessedSpecimen
-#
-Note: NonImageData a ImageData jsou instanceOf DigitalObject
-Note: DigitalObject jsou 's-daty' recordy, neco deponuji
-Note: ProcessingStep a ProcessedSpecimen jsou 'bez-datove' recordy, metadata-only
-
-ImageAnalysisStep a SamplePreparationStep umi produkovat NonImageData 
-ImageAcquisitionStep a ImageProcessingStep a ImageAnalysisStep umi produkovat ImageData
----
-
-DataCreatingProfile:
-- [ LocalIdentifier, =1 ]    -- optional PID(s) za dilci sub-recordy
-- OneOf: RawDataProfile, ProcessedDataProfile, AnalysedDataProfile
+#keeping but not used# ---
+#keeping but not used# ThisRecordItem:
+#keeping but not used# - [ LocalIdentifier, =1 ]    -- optional PID(s) za dilci sub-recordy
+#keeping but not used# - OneOf: NonImageData, ImageData, ProcessingStep, ProcessedSpecimen
+#keeping but not used# #
+#keeping but not used# Note: NonImageData a ImageData jsou instanceOf DigitalObject
+#keeping but not used# Note: DigitalObject jsou 's-daty' recordy, neco deponuji
+#keeping but not used# Note: ProcessingStep a ProcessedSpecimen jsou 'bez-datove' recordy, metadata-only
+#keeping but not used# 
+#keeping but not used# ImageAnalysisStep a SamplePreparationStep umi produkovat NonImageData 
+#keeping but not used# ImageAcquisitionStep a ImageProcessingStep a ImageAnalysisStep umi produkovat ImageData
+#keeping but not used# ---
 
 RawDataProfile:
-- Specimen
+- [ Specimen, =1 ]
 - [ SamplePreparationStep ]
-- ImageAcquisitionStep
+- [ ImageAcquisitionStep, =1 ]
 
 ProcessedDataProfile:
 - [ ImageProcessingStep ]
@@ -62,12 +44,13 @@ AnalysedDataProfile:
 
 
 ProcessingStep:
-- [ LocalIdentifier, =1 ]    -- optional ID v ramci tohoto recordu, umoznuje (jednoznacne) re-use ProcessingStep
+- [ InternalIdentifier, =1 ] -- optional ID v ramci tohoto recordu, umoznuje (jednoznacne) re-use ProcessingStep
+- [ Identifier, >=0 ]        -- optional PID(s) za celek, za cely tento jeden record
+- [ Title, <=1 ]
 - [ Label, >=0 ]
 - [ AdditionalNote, >=0 ]
 - [ Method, >=1 ]
 - [ Tool, >=1 ]
-## !!! neni nutne, resi se to temi _arrays_ v DataCreatingProfile - [ ProcessingStep, <=1 ]     -- predchozi ProcessingStep
 - OneOf: ImageAnalysisStep, ImageProcessingStep,
          ImageAcquisitionStep, SamplePreparationStep
 
@@ -105,22 +88,24 @@ ImageAnalysisStep:
 # - explicitni pojmenovani pripraveneho vzorku
 
 Specimen:
+- [ InternalIdentifier, =1 ]      -- optional ID v ramci tohoto recordu, umoznuje (jednoznacne) re-use Specimenu
+- [ Identifier, >=0 ]             -- optional PID(s) za celek, za cely tento jeden record
+- [ Title, <=1 ]
+- [ AdditionalNote, >=0 ]
 - [ Organism, =1 ]                -- main organism (aka reference frame)
-- [ BiogenicEntity, =1 ]          -- examined part of the organism
+- [ BiogenicEntity, <=1 ]         -- examined part of the organism (aka partOf)
 
-BiogenicEntity:
+BiogenicEntity:  (defacto to je nejaky mensi "dil" z Organism, ktery muze mit svuj dalsi mensi "dil"...)
+                 (mohlo by to byt i jako Array v Specimen, ale porad kazdy item muze mit vice synonymnich nazvu BiogenicEntityType)
 - [ BiogenicEntity, <=1 ]         -- partOf (umoznuje sestavit tzv. "zjemnujici retezec")
-- [ BiogenicEntityType, <=1 ]     -- ontologie pojmenovani biologickych research predmetu
+                                  -- v GUI je to v podstate tlacitko "Add another part"
+- [ BiogenicEntityType, >=1 ]     -- popis teto entity, ktery realizovan pomoci typu BiogenicEntityType
+
+BiogenicEntityType:
+- [ BiogenicEntityOntology, =1 ] -- zvolena ontologie pojmenovani biologickych research predmetu
+- [ BiogenicEntityLabel, =1 ]    -- hodnota z teto zvolene ontologie
 
 Organism:
 - [ AcceptedScientificName, >=0 ] -- spis volny string, typicke "hovorove" oznaceni
-- [ Taxon, =1 ]                   -- ontologie, exaktni biologicke pojmenovani
-- [ TaxonRank, >=0 ]              -- docela urcite ontologie, ale nevim presne ceho!! VLADO TODO
-
-
-SamplePreparationStep:
-- [ Specimen, >=1 ]          -- input
-- [ ProcessedSpecimen, >=1 ] -- output
-- [ DigitalObject, >=0 ]     -- output
-
+- [ TaxonRank, >=0 ]              -- ontologie, exaktni biologicke pojmenovani
 
