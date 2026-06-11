@@ -30,14 +30,14 @@ Metadata:                    -- entry point
 
 RawDataProfile:
 - [ Specimen, =1 ]
-- [ SamplePreparationStep ]
+- [ SamplePreparationStep, >=0 ]
 - [ ImageAcquisitionStep, =1 ]
 
 ProcessedDataProfile:
-- [ ImageProcessingStep ]
+- [ ImageProcessingStep, >=1 ]
 
 AnalysedDataProfile:
-- [ ImageAnalysisStep ]
+- [ ImageAnalysisStep, >=1 ]
 
 
 ------------------------------------------------
@@ -45,8 +45,6 @@ AnalysedDataProfile:
 
 ProcessingStep:
 - [ InternalIdentifier, =1 ] -- optional ID v ramci tohoto recordu, umoznuje (jednoznacne) re-use ProcessingStep
-- [ Identifier, >=0 ]        -- optional PID(s) za celek, za cely tento jeden record
-- [ Title, <=1 ]
 - [ Label, >=0 ]
 - [ AdditionalNote, >=0 ]
 - [ Method, >=1 ]
@@ -54,13 +52,19 @@ ProcessingStep:
 - OneOf: ImageAnalysisStep, ImageProcessingStep,
          ImageAcquisitionStep, SamplePreparationStep
 
-Method:
-- [ MethodLabel, >=0 ]       -- dedicated ontologies
-- [ Description, >=0 ]
+Method:  (pozor!, je to specializace Metadata resp. Resource)
+- [ MethodLabel, <=1 ]       -- defacto prejmenovany Title z Metadata
+- [ MethodType, >=0 ]        -- dedicated ontologies, podobne jako BiogenicEntityType
+- [ Description, >=0 ]       -- defacto prejmenovany AdditionalNote z Metadata
 
-Tool:
-- [ ToolLabel, >=0 ]         -- spis seznam tools dle typu ProcessingStep
-- [ Description, >=0 ]
+MethodType:
+- [ MethodOntology, =1 ]     -- zvolena ontologie pojmenovani metod
+- [ MethodLabel, =1 ]        -- hodnota z teto zvolene ontologie
+
+Tool:    (pozor!, je to specializace Metadata resp. Resource)
+- [ ToolLabel, <=1 ]         -- defacto prejmenovany Title z Metadata
+- [ Description, >=0 ]       -- defacto prejmenovany AdditionalNote z Metadata
+- [ Identifier, >=0 ]        -- optional PID(s), dedictvi z Metadata resp. Resource
 
 
 ImageAnalysisStep, ImageProcessingStep:
