@@ -1,0 +1,104 @@
+...for concept model v1.0...
+
+✅
+Metadata:                         -- entry point
+- [ RecordTitle, =1]              -- is coming from CCMM, basically; simulates what $Resource would do
+- [ AdditionalNote, >=0 ]         -- is coming from CCMM, basically; simulates what $Resource would do
+- [ PublicationYear: int, =1 ]    -- release year, not necessarily the same as the "DateInfo" in CCMM
+- [ Version: float, <=1 ]         -- release version; allows for repetition and changes monitoring
+- WasGeneratedBy, =1: OneOf [ RawDataProfile, >=1 ], [ ProcessedDataProfile, >=1 ],
+                            [ AnalysedDataProfile, >=1 ], [ GeneralRecordProfile, =1 ]
+
+------------------------------------------------
+
+RawDataProfile:
+- [ Specimen, =1 ]
+- [ SamplePreparationStep, >=0 ]
+- [ SampleAndItsImageAcquisitionStep, >=1 ]
+
+ProcessedDataProfile:
+- [ ImageProcessingStep, >=1 ]
+
+AnalysedDataProfile:
+- [ ImageAnalysisStep, >=1 ]
+
+GeneralRecordProfile:
+- void/pass/noop                  -- nothing extra needs to be told; we're just CCMM metadata and RO-Crate data
+                                  -- could possibly fit here Invenio.LinkedRecords but that uses CCMM, which is flat---cannot structure referenced items
+
+------------------------------------------------
+✅
+Resource:                         -- will be used with '$' which denotes inheriting all items of the Resource
+                                  -- Resource can be associated with PID(s); it can ProcessingStep, Specimen, etc.
+- [ Title, <=1 ]                  -- title of this particular item, which is not a CCMM-wrapped full record
+- [ AdditionalNote, >=0 ]
+- [ InternalID, =1 ]              -- optional! when reusing a $Resource in another Specimen or ProcessingStep (or in another
+                                     derivate of a Resource), the $Resource is verbatim copied incl. InternalID (this allows
+                                     to detect multiple usage of the same Resource), and setters of a Resource (Specimen, etc.)
+                                     will also set a new unique InternalID with every change (which assures that the changed
+                                     Resource will be understood as unique again)
+
+OntologyTerm:
+- [ OntologyName, =1 ]            -- common name under which the ontology is recognized
+- [ OntologyVersion, =1 ]         -- at least could be a date on which the value has been taken...
+- [ TermLabel, =1 ]               -- the actual value that is matched and displayed
+- [ TermIRI, =1 ]                 -- PID-like reference to the definition of the TermLabel; ontology can be inferred from this as well
+- [ TermIsDefinite, =1 ]          -- could be also named as isLeaf(); suggests if a finer term was available in the ontology
+
+------------------------------------------------
+✅
+Specimen:
+- $Resource                       -- title+addNote of the specimen
+- [ IsPartOf: Organism, =1 ]      -- main organism (aka reference frame)
+- [ BiogenicEntityType.Label: OntologyTerm, >=0 ]  -- additional chain of labels (possibly taken from a reference vocabulary)
+                                                      to incrementally refine the specification of the loci on the organism
+
+Organism:
+- [ AcceptedScientificName, >=0 ] -- spis volny string, typicke "hovorove" oznaceni
+- [ Taxon: OntologyTerm, >=1 ]    -- ontologie, exaktni biologicke pojmenovani
+
+------------------------------------------------
+
+SamplePreparationStep:
+- $ProcessingStep
+
+SampleAndItsImageAcquisitionStep: -- just binds together a named sample (physical) and its acquisition (turns to digital)
+                                  -- the deposited data (S3) could be named as $SampleLabel
+- [ SampleLabel, =1 ]             -- biologists like to tag/name their individual datasets (individual pieces from a bulk of data)
+                                  -- this would be a name of one such dataset (aka "piece of data")
+                                  -- basically emulates ProcessedSpecimen and "rebrands" it into a Sample, because...
+- [ ImageAcquisitionStep, =1 ]    -- ...it is an input to the consecutive image acquisition
+                                  -- produces one "piece of data" to be stored under $SampleLabel
+
+ImageAcquisitionStep:
+- $ProcessingStep                 -- need to be "instantiated" with per-step different lists of ontologies (one list for methods, one for tools)
+
+ImageProcessingStep:
+- $ProcessingStep
+
+ImageAnalysisStep:
+- $ProcessingStep
+
+------------------------------------------------
+
+ProcessingStep:
+- [ Method, >=1 ]                     -- methodology, kind of action taken, e.g. Convolution, Segmentation
+- [ Tool, >=1 ]                       -- tool to realize the methodology or the action, e.g. Huygens, Cellpose
+
+❗🚨❗🚨❗🚨❗
+Method:
+- $Resource                           -- title+addNote of the specific method
+- [ DescriptionOrPID, >=0 ]           -- explains the method, or outsources the description to where the PID points to
+                                      -- !! this seems not to be necessary when ontology is mandatorily used
+- [ MethodLabel: OntologyTerm, >=1 ]  -- dedicated ontologies; varies with every different ProcessingStep
+
+❗🚨❗🚨❗🚨❗
+Tool:
+- $Resource                           -- title+addNote of the specific tool
+- [ DescriptionOrPID, >=0 ]           -- explains the tool, or outsources the description to where the PID points to
+                                      -- !! this seems not to be necessary when ontology is mandatorily used
+- [ ToolLabel: OntologyTerm, >=1 ]    -- spis seznam tools dle typu ProcessingStep
+
+
+
+
