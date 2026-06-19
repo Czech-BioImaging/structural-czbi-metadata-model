@@ -56,15 +56,35 @@ OntologyTerm:
 ------------------------------------------------
 
 Specimen:
-- $Resource                       -- title+addNote of the specimen
-- [ IsPartOf: Organism, =1 ]      -- main organism (aka reference frame)
-- [ BiogenicEntityType.Label: OntologyTerm, >=0 ]  -- additional chain of labels (possibly taken from a reference vocabulary)
-                                                      to incrementally refine the specification of the loci on the organism
+# dle FIGMA:
+#
+# Taxon: spieces z NCBI (napr. modelove organismy), plati min spieces level vybirani, pohled vyvoje, =1
+# Specimen is: Hepa cells -- strukturni pohled, napr. "srdce", =1
+# Specimen part of: popisovani do vyssich urovni... >=0   (vycet moznych ontologii dle aktualniho obsahu ve Figme)
+#    pokud Specimen_is je z ontologie (tzn. stromova struktura, tak se "part of" doplni cela cesta ke koreni;
+#    pokud Specimen_is je z plocheho slovniku, listu, tak se "part of" nemuze doplnit automaticky a bude se doufat, ze to udela user
+#
+# a tyhle "Specimen is" a "Specimen part of" jsou v konceptualnim modelu "type" mezi BiogenicEntity a BiogenicEntityType
+# jenze BiogenicEntityType je v podstate polozka z nejake ontologie
+#
+- $Resource                           -- title+addNote of the specimen
+- [ IsPartOfOrganism: Organism, =1 ]  -- main organism (defined with a Taxon) from which the specimen is "derived"
+- [ IsPartOf: OntologyTerm, >=1 ]     -- chain of labels (possibly taken from vocabularies) to incrementally refine
+                                         the specification of the loci on the organism; an _ordered_ list from
+                                         larger to smaller (being a subset) "components of the organism"; the first
+                                         part on the list represents "Specimen is"; the second and further parts
+                                         represent "Specimen part of"
 
 Organism:
-- [ AcceptedScientificName, >=0 ] -- spis volny string, typicke "hovorove" oznaceni
-❗🚨❗🚨❗🚨❗ Niky: why TaxonRank is >=0 and not >=1 ??
-- [ Taxon: OntologyTerm, >=1 ]    -- ontologie, exaktni biologicke pojmenovani
+- [ AcceptedScientificName: OntologyTerm, =1 ] -- taxonomie (ontologie), exaktni biologicke pojmenovani
+                                      -- vybiraji z NCBI v nejnizsim vhodnem levelu/urovni/ranku; minimalne
+                                         vsak z levelu/urovne/ranku Spieces
+                                      -- level, ktery byl pouzit, se zapamatuje v atributu 'TaxonRank'
+- [ TaxonRank: OntologyTerm =1 ]      -- It is a value of 'Taxonomic rank'@ncbi.nlm.nih.gov, 'RANK'@BioPortal, 'has_rank'@OLS
+                                      -- !Redundant! The taxonomic rank of the most specific name in the dwc:scientificName;
+                                         but this is a mandatory parameter available at IRI of 'AcceptedScientificName'...
+                                      -- Associated ontology will be basically a set of accepted terms (Ranks) that CzBIRD
+                                         will define for this purpose; currently it will contain a single term 'Species'
 
 ------------------------------------------------
 
