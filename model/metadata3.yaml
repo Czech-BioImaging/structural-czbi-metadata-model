@@ -76,6 +76,9 @@ Specimen:
                                          represent "Specimen part of"
 
 Organism:
+- [ BelongsTo: Taxon, =1 ]
+
+Taxon:
 - [ AcceptedScientificName: OntologyTerm, =1 ] -- taxonomie (ontologie), exaktni biologicke pojmenovani
                                       -- vybiraji z NCBI v nejnizsim vhodnem levelu/urovni/ranku; minimalne
                                          vsak z levelu/urovne/ranku Spieces
