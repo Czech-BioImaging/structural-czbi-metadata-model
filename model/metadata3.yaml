@@ -123,6 +123,9 @@ DigitalImageSink:                 -- placeholder to make a connection between de
 - $Resource                       -- !attention! Resource.Title is here replaced with ImagesLabel
 - [ ImagesLabel: str, =1 ]        -- same as for DigitalObjectSink; likely an "experiment label"
 - [ ImagesPath: str, =1 ]         -- same as for DigitalObjectSink
+- [ ImagesMetadataKVpairs: str, <=1 ] -- format "key1=value1;key2=value2;..." containing all (even proprietary) metadata
+                                         from the uploaded image files
+                                      -- suggested by PetrBartunek@UMG
 
 ------------------------------------------------
 
