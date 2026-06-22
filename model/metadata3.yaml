@@ -17,14 +17,18 @@ RawDataProfile:
 - [ ImageAcquisitionStep, >=1 ]
 
 ProcessedDataProfile:
-- [ InputDataPID, =1 ]            -- explicit reference on input image data for this run
-                                  -- preferably PID external to this record, or PID created out of this record's Resource
+- [ InputDataIRI, >=1 ]           -- explicit reference on input image data for this run by means of:
+                                  -- preferably a PID-url to an external service (where are persistently reachable images)
+                                  -- ref/PID-url to final/published record from this repo ('ref' means Invenio's qqqqq-wwwww internal record ID)
+                                  -- ref to draft record from this repo ('ref' means Invenio's qqqqq-wwwww internal record ID)
 - [ ImageProcessingStep, >=1 ]    -- no surprise: the steps were executed in the listed order
 - [ ResultData: DigitalImageSink, >=1 ]
 
 AnalysedDataProfile:
-- [ InputDataPID, =1 ]            -- explicit reference on input image data for this run
-                                  -- preferably PID external to this record, or PID created out of this record's Resource
+- [ InputDataIRI, >=1 ]           -- explicit reference on input image data for this run by means of:
+                                  -- preferably a PID-url to an external service (where are persistently reachable images)
+                                  -- ref/PID-url to final/published record from this repo ('ref' means Invenio's qqqqq-wwwww internal record ID)
+                                  -- ref to draft record from this repo ('ref' means Invenio's qqqqq-wwwww internal record ID)
 - [ ImageAnalysisStep, >=1 ]
 - [ ResultData: DigitalObjectSink, >=0 ]  -- the sum of numbers of DigitalObjectSink and DigitalImageSink instances must be >=1
 - [ ResultData: DigitalImageSink, >=0 ]   -- results can be Object(s), Image(s), or a mixture of them
