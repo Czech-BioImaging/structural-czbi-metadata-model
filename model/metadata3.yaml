@@ -52,6 +52,7 @@ Resource:                         -- will be used with '$' which denotes inherit
                                      to detect multiple usage of the same Resource), and setters of a Resource (Specimen, etc.)
                                      will also set a new unique InternalID with every change (which assures that the changed
                                      Resource will be understood as unique again)
+                                  -- the InternalID could be a random hash (that requires no synchronization, allows for parallel editing)
 
 OntologyTerm:
 - [ OntologyName, =1 ]            -- common name under which the ontology is recognized
@@ -124,7 +125,7 @@ DigitalObjectSink:                -- placeholder to make a connection between de
 - $Resource                       -- !attention! Resource.Title is here replaced with DataLabel
 - [ DataLabel: str, =1 ]          -- biologists like to tag/name their individual datasets (individual pieces from a bulk of data)
                                   -- if no tag is provided by the user, the system must jump-in and create unique one (unique within this record)
-                                  -- tags/names can be auto-created e.g. as integer numbers
+                                  -- tags/names can be auto-created e.g. as (random) integer numbers
                                   -- the Label becomes unchangeable the moment upload starts
 - [ DataPath: str, =1 ]           -- this path, obviously, works within the "S3 bucket" associated for this record, includes Label
 
