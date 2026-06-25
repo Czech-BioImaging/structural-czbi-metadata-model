@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>cz.nrp.czbird</groupId>
+	<artifactId>repo</artifactId>
+	<version>0.0.1</version>
+
+	<name>Czech-BioImaging RD</name>
+	<description>Java testbed for data structure model.</description>
+	<url>https://github.com/Czech-BioImaging/structural-czbi-metadata-model</url>
+
+	<inceptionYear>2026</inceptionYear>
+
+	<licenses>
+		<license>
+			<name>Simplified BSD License</name>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<organization>
+		<name>FI MUNI</name>
+		<url>www.fi.muni.cz</url>
+	</organization>
+
+	<developers>
+		<developer>
+			<id>xulman</id>
+			<name>Vladimir Ulman</name>
+			<url>https://imagej.net/people/xulman</url>
+			<roles>
+				<role>founder</role>
+				<role>lead</role>
+				<role>developer</role>
+				<role>debugger</role>
+				<role>reviewer</role>
+				<role>support</role>
+				<role>maintainer</role>
+			</roles>
+		</developer>
+	</developers>
+
+	<contributors>
+		<!-- NB: Need at least one element to override the parent. See: https://issues.apache.org/jira/browse/MNG-5220 -->
+		<contributor>
+			<name>None</name>
+		</contributor>
+	</contributors>
+
+	<mailingLists>
+		<mailingList>
+			<name>Image.sc Forum</name>
+			<archive>https://forum.image.sc/tag/ome-zarr</archive>
+		</mailingList>
+	</mailingLists>
+
+	<!-- ====================================== -->
+
+	<scm>
+		<connection>scm:git:git://github.com/BioImageTools/ome-zarr-models-java</connection>
+		<developerConnection>scm:git:git@github.com:BioImageTools/ome-zarr-models-java</developerConnection>
+		<tag>HEAD</tag>
+		<url>https://github.com/BioImageTools/ome-zarr-models-java</url>
+	</scm>
+	<issueManagement>
+		<system>GitHub Issues</system>
+		<url>https://github.com/BioImageTools/ome-zarr-models-java/issues</url>
+	</issueManagement>
+	<ciManagement>
+		<system>GitHub Actions</system>
+		<url>https://github.com/BioImageTools/ome-zarr-models-java/actions</url>
+	</ciManagement>
+
+	<packaging>jar</packaging>
+
+	<!-- ====================================== -->
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+		<package-name>cz.nrp.czbird.repo</package-name>
+
+		<license.licenseName>bsd_2</license.licenseName>
+		<license.projectName>CzBIRD in Java</license.projectName>
+		<license.organizationName>MUNI</license.organizationName>
+		<license.copyrightOwners>MUNI</license.copyrightOwners>
+	</properties>
+
+	<repositories>
+		<repository>
+			<id>scijava.public</id>
+			<url>https://maven.scijava.org/content/groups/public</url>
+		</repository>
+	</repositories>
+
+	<dependencies>
+		<!-- Jackson 2 - required by jsonschema2pojo-generated classes -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>2.22.0</version>
+		</dependency>
+
+		<!-- JSON Schema validation against the OME-Zarr schemas (draft 2020-12) -->
+		<dependency>
+			<groupId>com.networknt</groupId>
+			<artifactId>json-schema-validator</artifactId>
+			<version>1.4.0</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.jsonschema2pojo</groupId>
+				<artifactId>jsonschema2pojo-maven-plugin</artifactId>
+				<version>1.2.1</version>
+				<configuration>
+					<sourceDirectory>${project.basedir}/src/main/resources/schema</sourceDirectory>
+					<targetPackage>cz.nrp.czbird.repo</targetPackage>
+					<annotationStyle>jackson2</annotationStyle>
+					<generateBuilders>true</generateBuilders>
+					<includeAdditionalProperties>false</includeAdditionalProperties>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>
