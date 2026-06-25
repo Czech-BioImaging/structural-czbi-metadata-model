@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "AnalysedPipeline.schema.json",
+  "title": "AnalysedPipeline",
+  "type": "object",
+  "properties": {
+    "input_data_iri": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1
+    },
+    "image_processing_step": {
+      "type": "array",
+      "items": { "$ref": "ImageProcessingStep.schema.json" }
+    },
+    "image_analysis_step": {
+      "type": "array",
+      "items": { "$ref": "ImageAnalysisStep.schema.json" },
+      "minItems": 1
+    },
+    "result_data_objects": {
+      "type": "array",
+      "items": { "$ref": "DigitalObjectSink.schema.json" }
+    },
+    "result_data_images": {
+      "type": "array",
+      "items": { "$ref": "DigitalImageSink.schema.json" }
+    }
+  },
+  "required": ["input_data_iri", "image_analysis_step"],
+  "anyOf": [
+    {
+      "required": ["result_data_objects"],
+      "properties": { "result_data_objects": { "minItems": 1 } }
+    },
+    {
+      "required": ["result_data_images"],
+      "properties": { "result_data_images": { "minItems": 1 } }
+    }
+  ]
+}

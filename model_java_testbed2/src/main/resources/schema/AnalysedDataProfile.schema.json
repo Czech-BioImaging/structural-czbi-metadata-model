@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "AnalysedDataProfile.schema.json",
+  "title": "AnalysedDataProfile",
+  "type": "object",
+  "properties": {
+    "profile_type": { "type": "string", "const": "analysedData" },
+    "analysed_data": {
+      "type": "array",
+      "items": { "$ref": "AnalysedPipeline.schema.json" },
+      "minItems": 1
+    }
+  },
+  "required": ["profile_type", "analysed_data"]
+}

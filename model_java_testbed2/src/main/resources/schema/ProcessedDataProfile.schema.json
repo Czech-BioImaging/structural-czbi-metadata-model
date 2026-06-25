@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ProcessedDataProfile.schema.json",
+  "title": "ProcessedDataProfile",
+  "type": "object",
+  "properties": {
+    "profile_type": { "type": "string", "const": "processedData" },
+    "processed_data": {
+      "type": "array",
+      "items": { "$ref": "ProcessedPipeline.schema.json" },
+      "minItems": 1
+    }
+  },
+  "required": ["profile_type", "processed_data"]
+}

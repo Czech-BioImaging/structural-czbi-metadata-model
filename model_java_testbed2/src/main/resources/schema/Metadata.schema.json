@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "Metadata.schema.json",
+  "title": "Metadata",
+  "description": "CzBIRD metadata model — NRP Invenio schema",
+  "type": "object",
+  "properties": {
+    "record_title": { "type": "string" },
+    "additional_note": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "publication_year": { "type": "integer" },
+    "version":          { "type": "number" },
+    "was_generated_by": {
+      "oneOf": [
+        { "$ref": "RawDataProfile.schema.json" },
+        { "$ref": "ProcessedDataProfile.schema.json" },
+        { "$ref": "AnalysedDataProfile.schema.json" },
+        { "$ref": "GeneralRecordProfile.schema.json" }
+      ]
+    }
+  },
+  "required": ["record_title", "publication_year", "was_generated_by"]
+}

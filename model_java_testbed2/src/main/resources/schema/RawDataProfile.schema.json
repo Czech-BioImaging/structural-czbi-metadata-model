@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "RawDataProfile.schema.json",
+  "title": "RawDataProfile",
+  "type": "object",
+  "properties": {
+    "profile_type": { "type": "string", "const": "rawData" },
+    "raw_data": {
+      "type": "array",
+      "items": { "$ref": "RawPipeline.schema.json" },
+      "minItems": 1
+    }
+  },
+  "required": ["profile_type", "raw_data"]
+}

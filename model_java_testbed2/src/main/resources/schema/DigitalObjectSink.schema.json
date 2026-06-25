@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "DigitalObjectSink.schema.json",
+  "title": "DigitalObjectSink",
+  "type": "object",
+  "properties": {
+    "additional_note": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "internal_id": { "type": "string" },
+    "data_label":  { "type": "string" },
+    "data_path":   { "type": "string" }
+  },
+  "required": ["internal_id", "data_label", "data_path"]
+}

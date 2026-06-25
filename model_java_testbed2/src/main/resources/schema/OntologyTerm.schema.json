@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "OntologyTerm.schema.json",
+  "title": "OntologyTerm",
+  "type": "object",
+  "properties": {
+    "ontology_name":    { "type": "string" },
+    "ontology_version": { "type": "string" },
+    "term_label":       { "type": "string" },
+    "term_iri":         { "type": "string" },
+    "term_is_definite": { "type": "boolean" }
+  },
+  "required": ["ontology_name", "ontology_version", "term_label", "term_iri", "term_is_definite"]
+}

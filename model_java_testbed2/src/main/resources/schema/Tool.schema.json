@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "Tool.schema.json",
+  "title": "Tool",
+  "type": "object",
+  "properties": {
+    "title": { "type": "string" },
+    "additional_note": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "internal_id": { "type": "string" },
+    "description": { "type": "string" },
+    "iri":         { "type": "string" },
+    "is_software": { "type": "boolean" }
+  },
+  "required": ["internal_id", "is_software"],
+  "oneOf": [
+    { "required": ["description"], "not": { "required": ["iri"] } },
+    { "required": ["iri"],         "not": { "required": ["description"] } }
+  ]
+}

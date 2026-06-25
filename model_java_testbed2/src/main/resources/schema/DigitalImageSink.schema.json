@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "DigitalImageSink.schema.json",
+  "title": "DigitalImageSink",
+  "type": "object",
+  "properties": {
+    "additional_note": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "internal_id":              { "type": "string" },
+    "images_label":             { "type": "string" },
+    "images_path":              { "type": "string" },
+    "images_metadata_kv_pairs": { "type": "string" }
+  },
+  "required": ["internal_id", "images_label", "images_path"]
+}

@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "Specimen.schema.json",
+  "title": "Specimen",
+  "type": "object",
+  "properties": {
+    "title": { "type": "string" },
+    "additional_note": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "internal_id":         { "type": "string" },
+    "is_part_of_organism": { "$ref": "Organism.schema.json" },
+    "is_part_of": {
+      "type": "array",
+      "items": { "$ref": "OntologyTerm.schema.json" },
+      "minItems": 1
+    }
+  },
+  "required": ["internal_id", "is_part_of_organism", "is_part_of"]
+}

@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "RawPipeline.schema.json",
+  "title": "RawPipeline",
+  "type": "object",
+  "properties": {
+    "specimen": { "$ref": "Specimen.schema.json" },
+    "sample_preparation_step": {
+      "type": "array",
+      "items": { "$ref": "SamplePreparationStep.schema.json" }
+    },
+    "image_acquisition_step": {
+      "type": "array",
+      "items": { "$ref": "ImageAcquisitionStep.schema.json" },
+      "minItems": 1
+    }
+  },
+  "required": ["specimen", "image_acquisition_step"]
+}

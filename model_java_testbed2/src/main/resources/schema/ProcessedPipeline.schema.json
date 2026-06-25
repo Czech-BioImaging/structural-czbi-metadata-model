@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ProcessedPipeline.schema.json",
+  "title": "ProcessedPipeline",
+  "type": "object",
+  "properties": {
+    "input_data_iri": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1
+    },
+    "image_processing_step": {
+      "type": "array",
+      "items": { "$ref": "ImageProcessingStep.schema.json" },
+      "minItems": 1
+    },
+    "result_data": {
+      "type": "array",
+      "items": { "$ref": "DigitalImageSink.schema.json" },
+      "minItems": 1
+    }
+  },
+  "required": ["input_data_iri", "image_processing_step", "result_data"]
+}

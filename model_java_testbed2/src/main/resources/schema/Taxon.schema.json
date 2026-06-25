@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "Taxon.schema.json",
+  "title": "Taxon",
+  "type": "object",
+  "properties": {
+    "accepted_scientific_name": { "$ref": "OntologyTerm.schema.json" },
+    "taxon_rank":               { "$ref": "OntologyTerm.schema.json" }
+  },
+  "required": ["accepted_scientific_name", "taxon_rank"]
+}

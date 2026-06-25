@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "Method.schema.json",
+  "title": "Method",
+  "type": "object",
+  "properties": {
+    "title": { "type": "string" },
+    "additional_note": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "internal_id": { "type": "string" },
+    "description": { "type": "string" },
+    "iri":         { "type": "string" },
+    "method_type_label": {
+      "type": "array",
+      "items": { "$ref": "OntologyTerm.schema.json" },
+      "minItems": 1
+    }
+  },
+  "required": ["internal_id", "method_type_label"],
+  "oneOf": [
+    { "required": ["description"], "not": { "required": ["iri"] } },
+    { "required": ["iri"],         "not": { "required": ["description"] } }
+  ]
+}

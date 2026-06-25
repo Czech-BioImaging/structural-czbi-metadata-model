@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "GeneralRecordProfile.schema.json",
+  "title": "GeneralRecordProfile",
+  "type": "object",
+  "properties": {
+    "profile_type": { "type": "string", "const": "generalRecord" }
+  },
+  "required": ["profile_type"]
+}

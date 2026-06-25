@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ImageProcessingStep.schema.json",
+  "title": "ImageProcessingStep",
+  "type": "object",
+  "properties": {
+    "step_label":      { "type": "string" },
+    "realizes_method": { "$ref": "Method.schema.json" },
+    "employs_tool":    { "$ref": "Tool.schema.json" },
+    "digital_object_sink": {
+      "type": "array",
+      "items": { "$ref": "DigitalObjectSink.schema.json" }
+    },
+    "digital_image_sink": {
+      "type": "array",
+      "items": { "$ref": "DigitalImageSink.schema.json" }
+    }
+  },
+  "required": ["step_label", "realizes_method", "employs_tool"]
+}
