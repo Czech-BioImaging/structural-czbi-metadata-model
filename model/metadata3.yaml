@@ -17,7 +17,7 @@ RawDataProfile:
 - [ ImageAcquisitionStep, >=1 ]
 
 ProcessedDataProfile:
-- [ InputDataIRI, >=1 ]           -- explicit reference on input image data for this run by means of:
+- [ InputDataIRI: str, >=1 ]      -- explicit reference on input image data for this run by means of:
                                   -- preferably a PID-url to an external service (where are persistently reachable images)
                                   -- ref/PID-url to final/published record from this repo ('ref' means Invenio's qqqqq-wwwww internal record ID)
                                   -- ref to draft record from this repo ('ref' means Invenio's qqqqq-wwwww internal record ID)
@@ -26,7 +26,7 @@ ProcessedDataProfile:
                                              note that the individual Steps are allowed to produce their own "intermediate" Digital*Sinks
 
 AnalysedDataProfile:
-- [ InputDataIRI, >=1 ]           -- explicit reference on input image data for this run by means of:
+- [ InputDataIRI: str, >=1 ]      -- explicit reference on input image data for this run by means of:
                                   -- preferably a PID-url to an external service (where are persistently reachable images)
                                   -- ref/PID-url to final/published record from this repo ('ref' means Invenio's qqqqq-wwwww internal record ID)
                                   -- ref to draft record from this repo ('ref' means Invenio's qqqqq-wwwww internal record ID)
@@ -153,6 +153,9 @@ Tool:
 - [ IsSoftware: boolean, =1 ]
 
 MethodsAndTools:
-- $Resource                           -- title+addNote of the specific tool
-- [ DescriptionOrPID, >=0 ]           -- explains the tool, or outsources the description by providing a PID to the description
+- $Resource                           -- title+addNote of the specific methodology or tool
+- OneOf [ Description: str, =1 ], [ IRI: str, =1 ]
+                                      -- explains the methodology/tool verbosely, or outsources the description by providing an IRI to the description
+                                      -- Description-variant is a multi-line text area
+                                      -- IRI-variant is a single-line form (for one URL)
 
