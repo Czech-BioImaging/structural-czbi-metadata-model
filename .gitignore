@@ -1,2 +1,4 @@
 # VIM tmp files
 .*.sw*
+
+__pycache__
