@@ -9,6 +9,7 @@ version = "0.1.0"
 
 [dependencies]
 python = ">=3.14.6,<3.15"
+pyside6 = ">=6.11.1,<7"
 
 [pypi-dependencies]
 czbird = { path = "../czbird-py", editable = true }
