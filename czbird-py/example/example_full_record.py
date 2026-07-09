@@ -8,7 +8,7 @@ acquisition step. internal_id fields are left to auto-generate.
 
 Run:  python example_full_record.py
 """
-import czbird_model as M
+from czbird import czbird_model as M
 
 
 # --------------------------------------------------------------------------- #
