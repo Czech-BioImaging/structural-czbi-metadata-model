@@ -8,7 +8,7 @@
 - [Cesnet's aka NRP-CZ tailored variant](https://github.com/nrp-cz).
 
 The metadata model around here is designed for [the latter](https://github.com/nrp-cz),
-and it is officially named now as ==CzBIRD==.
+and it is officially named now as **CzBIRD**.
 
 
 # Metadata model for CzechBioImaging repository
@@ -25,12 +25,14 @@ and result data. It is inspired heavily by REMBI 1.5 and the
 The model is expressed here in various formats and folders:
 
 - Invenio's `metadata.yaml` is in the [`model`](/model) folder
-  - Includes also example payload `.json` files that can be sent to backend API
+  - Includes also `metadata.txt` in succinct, yet somewhat obvious specification
+- Includes also example payload `.json` files that can be sent to backend API
   - [`scripts`](/scripts) to test submission of record drafts, etc.
-  - [czbird-py](/czbird-py) as Python package `czbird` for JSON payloads
-    - [model_python](/model_python) with `pixi` environment for Python playground
+- [`czbird-py`](/czbird-py) as Python package `czbird` for JSON payloads
+  - [`model_python`](/model_python) with `pixi` environment for Python playground
+
+External resources from this GH organization:
 
 - [Rendered specification of the model](https://czech-bioimaging.github.io/bioimaging-metadata-model-specification/en/)
-
 - [Dataspecer project(s) backup(s)](https://github.com/Czech-BioImaging/conceptual-czbi-metadata-model)
 
