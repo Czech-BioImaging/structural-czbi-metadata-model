@@ -49,7 +49,7 @@ from typing import Optional, Union, get_args, get_origin
 
 from pydantic import BaseModel, ConfigDict, create_model
 
-import czbird_model as _strict
+import czbird.czbird_model as _strict
 
 
 # --------------------------------------------------------------------------- #
