@@ -105,9 +105,17 @@ def _draftify_annotation(ann: typing.Any) -> typing.Any:
         return ann
 
 
+# Fields the draft layer never exposes. ``internal_id`` is auto-generated and
+# frozen on the strict model; per the builder-pattern design it is minted only
+# when ``to_strict`` constructs the real object, never during draft editing.
+_DRAFT_EXCLUDED_FIELDS = {"internal_id"}
+
+
 def _build_draft(strict_cls: type[BaseModel]) -> type[BaseModel]:
     fields: dict[str, tuple] = {}
     for name, finfo in strict_cls.model_fields.items():
+        if name in _DRAFT_EXCLUDED_FIELDS:
+            continue
         relaxed = _draftify_annotation(finfo.annotation)
         # Every field becomes optional & unset by default.
         fields[name] = (Optional[relaxed], None)
@@ -175,6 +183,8 @@ def missing_required(draft: BaseModel, strict_cls: type[BaseModel]) -> list[str]
 
     def walk(d: BaseModel, s_cls: type[BaseModel], prefix: str) -> None:
         for name, finfo in s_cls.model_fields.items():
+            if name in _DRAFT_EXCLUDED_FIELDS:
+                continue  # auto-filled at strict construction, never user-supplied
             value = getattr(d, name, None)
             path = f"{prefix}{name}"
             if finfo.is_required() and value is None:
