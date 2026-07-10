@@ -105,6 +105,15 @@ def short(cls_name: str) -> str:
     return cls_name.replace("CZBIRD", "")
 
 
+def _min_items(finfo) -> int:
+    """Return the min_length constraint of a list field (0 if none)."""
+    for meta in getattr(finfo, "metadata", ()):
+        ml = getattr(meta, "min_length", None)
+        if ml is not None:
+            return ml
+    return 0
+
+
 def czbird_summary(obj: BaseModel) -> str:
     """Compact one-line summary of a nested object for row/field headers.
 
@@ -204,7 +213,8 @@ class CzbirdDialog(QDialog):
             elif kind == "czbird":
                 self._add_single_czbird(name, value)
             elif kind == "list_czbird":
-                self._add_list_czbird(name, detail, value)
+                min_required = _min_items(finfo)
+                self._add_list_czbird(name, detail, value, min_required)
             elif kind == "union_czbird":
                 # The root's was_generated_by: a single nested object whose
                 # concrete class is whatever is currently set.
@@ -316,7 +326,8 @@ class CzbirdDialog(QDialog):
         h.addWidget(btn)
         self.form.addRow(f"{human(name)}:", row)
 
-    def _add_list_czbird(self, name: str, elem_cls: type, value: list) -> None:
+    def _add_list_czbird(self, name: str, elem_cls: type, value: list,
+                         min_required: int = 0) -> None:
         box = QGroupBox(f"{human(name)}  [{short(elem_cls.__name__)}]")
         v = QVBoxLayout(box)
         rows_holder = QWidget()
@@ -330,6 +341,10 @@ class CzbirdDialog(QDialog):
                 item = rows_layout.takeAt(0)
                 if item.widget():
                     item.widget().deleteLater()
+            if not value:
+                empty = QLabel("(none)")
+                empty.setStyleSheet("color: #999; font-style: italic;")
+                rows_layout.addWidget(empty)
             for idx, elem in enumerate(value):
                 r = QWidget()
                 rh = QHBoxLayout(r)
@@ -345,18 +360,18 @@ class CzbirdDialog(QDialog):
 
                 edit_btn.clicked.connect(_edit)
                 rh.addWidget(edit_btn)
-                # Allow removing extra items, but never below one (min_items
-                # safety for required arrays; harmless for optional ones).
+                # Removal is blocked only when it would drop below the schema's
+                # min_items for this field (0 for optional arrays -> can empty).
                 del_btn = QPushButton("−")
                 del_btn.setFixedWidth(28)
                 def _remove(_=False, o=elem):
-                    if len(value) > 1:
+                    if len(value) > min_required:
                         value.remove(o)
                         render_rows()
                     else:
                         QMessageBox.information(
                             self, "Cannot remove",
-                            "At least one item must remain.")
+                            f"At least {min_required} item(s) must remain.")
                 del_btn.clicked.connect(_remove)
                 rh.addWidget(del_btn)
                 rows_layout.addWidget(r)
