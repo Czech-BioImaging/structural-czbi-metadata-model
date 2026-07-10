@@ -221,10 +221,18 @@ class CzbirdDialog(QDialog):
                 self._add_single_czbird(name, value)
 
     def _add_readonly(self, name: str, value: Any) -> None:
-        lbl = QLabel(str(value))
-        lbl.setTextInteractionFlags(Qt.TextSelectableByMouse)
-        lbl.setStyleSheet("color: gray;")
-        self.form.addRow(f"{human(name)}:", lbl)
+        italic = name == "internal_id"
+        style = "color: gray;" + (" font-style: italic;" if italic else "")
+
+        value_lbl = QLabel(str(value))
+        value_lbl.setTextInteractionFlags(Qt.TextSelectableByMouse)
+        value_lbl.setStyleSheet(style)
+
+        # Use an explicit styled label widget so the whole line (label + value)
+        # is greyed/italicised, not just the value side.
+        name_lbl = QLabel(f"{human(name)}:")
+        name_lbl.setStyleSheet(style)
+        self.form.addRow(name_lbl, value_lbl)
 
     def _add_scalar(self, name: str, pytype: type, value: Any) -> None:
         if pytype is bool:
