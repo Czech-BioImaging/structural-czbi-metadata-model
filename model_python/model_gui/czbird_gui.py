@@ -42,7 +42,7 @@ from PySide6.QtWidgets import (
     QApplication, QDialog, QWidget, QLabel, QLineEdit, QSpinBox,
     QDoubleSpinBox, QCheckBox, QPushButton, QVBoxLayout, QHBoxLayout,
     QFormLayout, QGroupBox, QScrollArea, QPlainTextEdit, QMessageBox,
-    QMainWindow,
+    QMainWindow, QRadioButton, QButtonGroup,
 )
 from PySide6.QtCore import Qt
 from pydantic import BaseModel, ValidationError
@@ -105,6 +105,24 @@ def short(cls_name: str) -> str:
     return cls_name.replace("CZBIRD", "")
 
 
+def czbird_summary(obj: BaseModel) -> str:
+    """Compact one-line summary of a nested object for row/field headers.
+
+    OntologyTerm is abbreviated to ``OntoTerm: <term_label>`` so an array of
+    ontology terms is scannable without opening each one. Other types fall back
+    to their short class name plus an identifying label if present.
+    """
+    cls = type(obj).__name__
+    if cls == "CZBIRDOntologyTerm":
+        return f"OntoTerm: {getattr(obj, 'term_label', '') or '—'}"
+    for key in ("title", "step_label", "data_label", "images_label",
+                "record_title"):
+        v = getattr(obj, key, None)
+        if isinstance(v, str) and v:
+            return f"{short(cls)}: {v}"
+    return short(cls)
+
+
 # --------------------------------------------------------------------------- #
 # The generic editor dialog.
 # --------------------------------------------------------------------------- #
@@ -122,6 +140,9 @@ class CzbirdDialog(QDialog):
         self._scalar_getters: dict[str, callable] = {}
         # For scalar-list fields: field -> QPlainTextEdit (one value per line).
         self._list_scalar_widgets: dict[str, QPlainTextEdit] = {}
+        # For an exclusive (radio) group: a single callable returning a dict of
+        # {field: value_or_None} for all fields in the group.
+        self._exclusive_getters: list[callable] = []
 
         outer = QVBoxLayout(self)
 
@@ -150,11 +171,27 @@ class CzbirdDialog(QDialog):
             btn_row.addWidget(b)
         outer.addLayout(btn_row)
 
+    # Classes whose (description, iri) pair is mutually exclusive: exactly one
+    # is used at a time. Rendered as a radio group rather than two rows.
+    _EXCLUSIVE_PAIR = {"CZBIRDMethod", "CZBIRDTool"}
+
     # ---------------------------------------------------------------- build --
     def _build_fields(self) -> None:
+        cls_name = type(self.obj).__name__
+        exclusive = cls_name in self._EXCLUSIVE_PAIR
+        handled: set[str] = set()
+
         for name, finfo in type(self.obj).model_fields.items():
+            if name in handled:
+                continue
             kind, detail = classify(finfo.annotation)
             value = getattr(self.obj, name)
+
+            # Exclusive description/iri pair -> one combined radio-group row.
+            if exclusive and name in ("description", "iri"):
+                self._add_exclusive_pair("description", "iri")
+                handled.update({"description", "iri"})
+                continue
 
             if name == "internal_id":
                 self._add_readonly(name, value)
@@ -200,6 +237,58 @@ class CzbirdDialog(QDialog):
             self._scalar_getters[name] = w.text
         self.form.addRow(f"{human(name)}:", w)
 
+    def _add_exclusive_pair(self, name_a: str, name_b: str) -> None:
+        """Render two optional string fields as a mutually-exclusive choice.
+
+        Exactly one of the two is active (radio-selected + editable); the other
+        is disabled but still visible. The initially-selected radio is whichever
+        field currently holds a non-empty value (falling back to the first).
+        On collect, only the selected field is written; the other is set to
+        ``None`` so the object never carries both at once.
+        """
+        val_a = getattr(self.obj, name_a) or ""
+        val_b = getattr(self.obj, name_b) or ""
+
+        box = QGroupBox(f"{human(name_a)} / {human(name_b)}  (choose one)")
+        grid = QVBoxLayout(box)
+        group = QButtonGroup(box)
+
+        radio_a = QRadioButton(human(name_a))
+        edit_a = QLineEdit(str(val_a))
+        radio_b = QRadioButton(human(name_b))
+        edit_b = QLineEdit(str(val_b))
+        group.addButton(radio_a)
+        group.addButton(radio_b)
+
+        # Initial selection: prefer the one that already has content.
+        select_b_first = bool(val_b) and not bool(val_a)
+        radio_b.setChecked(select_b_first)
+        radio_a.setChecked(not select_b_first)
+
+        def _sync():
+            edit_a.setEnabled(radio_a.isChecked())
+            edit_b.setEnabled(radio_b.isChecked())
+
+        radio_a.toggled.connect(_sync)
+        radio_b.toggled.connect(_sync)
+        _sync()
+
+        for radio, edit in ((radio_a, edit_a), (radio_b, edit_b)):
+            row = QWidget()
+            rh = QHBoxLayout(row)
+            rh.setContentsMargins(0, 0, 0, 0)
+            rh.addWidget(radio)
+            rh.addWidget(edit, 1)
+            grid.addWidget(row)
+
+        def getter() -> dict:
+            if radio_a.isChecked():
+                return {name_a: edit_a.text(), name_b: None}
+            return {name_a: None, name_b: edit_b.text()}
+
+        self._exclusive_getters.append(getter)
+        self.form.addRow(box)
+
     def _add_list_scalar(self, name: str, value: list) -> None:
         box = QGroupBox(f"{human(name)} (one per line)")
         v = QVBoxLayout(box)
@@ -213,10 +302,17 @@ class CzbirdDialog(QDialog):
         row = QWidget()
         h = QHBoxLayout(row)
         h.setContentsMargins(0, 0, 0, 0)
-        h.addWidget(QLabel(f"<i>{short(type(value).__name__)}</i>"))
+        summary = QLabel(czbird_summary(value))
+        summary.setStyleSheet("color: #555;")
+        h.addWidget(summary)
         h.addStretch(1)
         btn = QPushButton(f"Edit {short(type(value).__name__)}…")
-        btn.clicked.connect(lambda _=False, o=value: self._open_child(o))
+
+        def _open(_=False, o=value, lbl=summary):
+            self._open_child(o)
+            lbl.setText(czbird_summary(o))  # reflect edits made in the child
+
+        btn.clicked.connect(_open)
         h.addWidget(btn)
         self.form.addRow(f"{human(name)}:", row)
 
@@ -238,10 +334,16 @@ class CzbirdDialog(QDialog):
                 r = QWidget()
                 rh = QHBoxLayout(r)
                 rh.setContentsMargins(0, 0, 0, 0)
-                rh.addWidget(QLabel(f"{idx + 1}. {short(type(elem).__name__)}"))
+                row_lbl = QLabel(f"{idx + 1}. {czbird_summary(elem)}")
+                rh.addWidget(row_lbl)
                 rh.addStretch(1)
                 edit_btn = QPushButton("Edit…")
-                edit_btn.clicked.connect(lambda _=False, o=elem: self._open_child(o))
+
+                def _edit(_=False, o=elem):
+                    self._open_child(o)
+                    render_rows()  # labels may have changed
+
+                edit_btn.clicked.connect(_edit)
                 rh.addWidget(edit_btn)
                 # Allow removing extra items, but never below one (min_items
                 # safety for required arrays; harmless for optional ones).
@@ -282,6 +384,8 @@ class CzbirdDialog(QDialog):
         for name, editor in self._list_scalar_widgets.items():
             lines = [ln for ln in editor.toPlainText().split("\n") if ln.strip() != ""]
             data[name] = lines
+        for getter in self._exclusive_getters:
+            data.update(getter())  # {selected: text, other: None}
         return data
 
     def _apply(self) -> bool:
