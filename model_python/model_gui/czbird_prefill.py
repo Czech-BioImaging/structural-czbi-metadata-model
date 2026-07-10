@@ -102,7 +102,7 @@ def prefill_CZBIRDSamplePreparationStep() -> M.CZBIRDSamplePreparationStep:
         step_label=PLACEHOLDER,
         realizes_method=prefill_CZBIRDMethod(),
         employs_tool=prefill_CZBIRDTool(),
-        digital_object_sink=[prefill_CZBIRDDigitalObjectSink()],
+        digital_object_sink=[],   # optional array: starts empty
     )
 
 
@@ -120,8 +120,8 @@ def prefill_CZBIRDImageProcessingStep() -> M.CZBIRDImageProcessingStep:
         step_label=PLACEHOLDER,
         realizes_method=prefill_CZBIRDMethod(),
         employs_tool=prefill_CZBIRDTool(),
-        digital_object_sink=[prefill_CZBIRDDigitalObjectSink()],
-        digital_image_sink=[prefill_CZBIRDDigitalImageSink()],
+        digital_object_sink=[],   # optional array: starts empty
+        digital_image_sink=[],    # optional array: starts empty
     )
 
 
@@ -130,8 +130,8 @@ def prefill_CZBIRDImageAnalysisStep() -> M.CZBIRDImageAnalysisStep:
         step_label=PLACEHOLDER,
         realizes_method=prefill_CZBIRDMethod(),
         employs_tool=prefill_CZBIRDTool(),
-        digital_object_sink=[prefill_CZBIRDDigitalObjectSink()],
-        digital_image_sink=[prefill_CZBIRDDigitalImageSink()],
+        digital_object_sink=[],   # optional array: starts empty
+        digital_image_sink=[],    # optional array: starts empty
     )
 
 
@@ -141,7 +141,7 @@ def prefill_CZBIRDImageAnalysisStep() -> M.CZBIRDImageAnalysisStep:
 def prefill_CZBIRDRawPipeline() -> M.CZBIRDRawPipeline:
     return M.CZBIRDRawPipeline(
         specimen=prefill_CZBIRDSpecimen(),
-        sample_preparation_step=[prefill_CZBIRDSamplePreparationStep()],
+        sample_preparation_step=[],   # optional array: starts empty
         image_acquisition_step=[prefill_CZBIRDImageAcquisitionStep()],
     )
 
