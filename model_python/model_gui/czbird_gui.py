@@ -42,13 +42,17 @@ from PySide6.QtWidgets import (
     QApplication, QDialog, QWidget, QLabel, QLineEdit, QSpinBox,
     QDoubleSpinBox, QCheckBox, QPushButton, QVBoxLayout, QHBoxLayout,
     QFormLayout, QGroupBox, QScrollArea, QPlainTextEdit, QMessageBox,
-    QMainWindow, QRadioButton, QButtonGroup,
+    QMainWindow, QRadioButton, QButtonGroup, QComboBox,
 )
 from PySide6.QtCore import Qt
 from pydantic import BaseModel, ValidationError
 
 from czbird import czbird_model as M
 import czbird_prefill as P
+import czbird_registry as R
+
+# Session-wide resource registry, set once by MainWindow and read by dialogs.
+REGISTRY: R.ResourceRegistry = R.ResourceRegistry()
 
 
 # --------------------------------------------------------------------------- #
@@ -133,6 +137,138 @@ def czbird_summary(obj: BaseModel) -> str:
 
 
 # --------------------------------------------------------------------------- #
+# "Add resource" chooser: New vs. Copy-from an existing object.
+# --------------------------------------------------------------------------- #
+class AddResourceDialog(QDialog):
+    """Choose the source for a resource object.
+
+    Two regimes:
+
+    * ``reset_mode=False`` (add a NEW item to a list): a radio pair — brand-new
+      prefill, or a copy of an existing resource — plus a candidate dropdown.
+      Returns an independent object (fresh id) via ``result_obj``.
+
+    * ``reset_mode=True`` (fill the object currently being edited): there is no
+      choice of "new object vs. copy" — the object already exists and is only
+      being refilled. So the UI collapses to a single dropdown whose first entry
+      is "Reset fields (empty placeholders)" and whose remaining entries are the
+      other resources of this type (the currently-edited object is excluded —
+      copying it into itself is pointless). ``result_obj`` is the raw source to
+      copy fields FROM; the caller deep-copies the content.
+    """
+
+    RESET_LABEL = "Reset fields (empty placeholders)"
+
+    def __init__(self, elem_cls: type, parent=None, reset_mode: bool = False,
+                 exclude_obj: BaseModel | None = None):
+        super().__init__(parent)
+        self.elem_cls = elem_cls
+        self.result_obj: BaseModel | None = None
+        self._reset_mode = reset_mode
+        self.setWindowTitle(f"Copy {short(elem_cls.__name__)} from…"
+                            if reset_mode else f"Add {short(elem_cls.__name__)}")
+        self.setMinimumWidth(460)
+
+        current, deleted = REGISTRY.candidates(elem_cls)
+        # Never offer the object being edited as a source for itself.
+        if exclude_obj is not None:
+            current = [o for o in current if o is not exclude_obj]
+            deleted = [o for o in deleted if o is not exclude_obj]
+
+        outer = QVBoxLayout(self)
+        self._combo = QComboBox()
+
+        if reset_mode:
+            # ---- single-dropdown regime -------------------------------- #
+            outer.addWidget(QLabel(
+                f"Fill this {short(elem_cls.__name__)} from:"))
+            self._combo_objs: list[BaseModel | None] = []
+            # First entry = reset to placeholders (None => fresh prefill).
+            self._combo.addItem(self.RESET_LABEL)
+            self._combo_objs.append(None)
+            for o in current:
+                self._combo.addItem(czbird_summary(o))
+                self._combo_objs.append(o)
+            for o in deleted:
+                self._combo.addItem(f"{czbird_summary(o)}   (removed)")
+                self._combo_objs.append(o)
+            outer.addWidget(self._combo)
+            self._radio_new = None
+            self._radio_copy = None
+        else:
+            # ---- add-new regime (radio pair + candidates) --------------- #
+            outer.addWidget(QLabel(
+                f"How should the new {short(elem_cls.__name__)} be created?"))
+            self._radio_new = QRadioButton("Brand new (empty placeholders)")
+            self._radio_copy = QRadioButton("Copy of an existing one:")
+            self._radio_new.setChecked(True)
+            grp = QButtonGroup(self)
+            grp.addButton(self._radio_new)
+            grp.addButton(self._radio_copy)
+            outer.addWidget(self._radio_new)
+            outer.addWidget(self._radio_copy)
+
+            self._populate_combo(current, deleted)
+            self._combo.setEnabled(False)
+            outer.addWidget(self._combo)
+            if not (current or deleted):
+                self._radio_copy.setEnabled(False)
+                self._combo.addItem("(no existing objects to copy)")
+            self._radio_copy.toggled.connect(self._combo.setEnabled)
+
+        row = QHBoxLayout()
+        ok = QPushButton("Apply" if reset_mode else "Add")
+        cancel = QPushButton("Cancel")
+        ok.clicked.connect(self._on_ok)
+        cancel.clicked.connect(self.reject)
+        ok.setDefault(True)
+        row.addStretch(1)
+        row.addWidget(ok)
+        row.addWidget(cancel)
+        outer.addLayout(row)
+
+    def _populate_combo(self, current, deleted) -> None:
+        """Grouped candidate list, used only in add-new mode."""
+        self._combo_objs: list[BaseModel | None] = []
+        if current:
+            self._combo.addItem("— current —")
+            self._combo_objs.append(None)  # header, not selectable as a value
+            for o in current:
+                self._combo.addItem("  " + czbird_summary(o))
+                self._combo_objs.append(o)
+        if deleted:
+            self._combo.addItem("— removed —")
+            self._combo_objs.append(None)
+            for o in deleted:
+                self._combo.addItem("  " + czbird_summary(o))
+                self._combo_objs.append(o)
+
+    def _on_ok(self) -> None:
+        if self._reset_mode:
+            idx = self._combo.currentIndex()
+            ref = self._combo_objs[idx] if 0 <= idx < len(self._combo_objs) else None
+            # None at index 0 == "Reset fields" => a throwaway prefill source.
+            # It is deliberately NOT registered: it is a scratch source, not an
+            # object that lives in the record.
+            self.result_obj = P.prefill(self.elem_cls) if ref is None else ref
+            self.accept()
+            return
+
+        # add-new mode
+        if self._radio_new.isChecked():
+            self.result_obj = P.prefill(self.elem_cls)
+        else:
+            idx = self._combo.currentIndex()
+            ref = self._combo_objs[idx] if 0 <= idx < len(self._combo_objs) else None
+            if ref is None:  # header row or nothing chosen
+                QMessageBox.information(
+                    self, "Pick one", "Please select an object to copy.")
+                return
+            self.result_obj = R.copy_resource(ref)
+        self.accept()
+
+
+# --------------------------------------------------------------------------- #
 # The generic editor dialog.
 # --------------------------------------------------------------------------- #
 class CzbirdDialog(QDialog):
@@ -166,8 +302,14 @@ class CzbirdDialog(QDialog):
 
         self._build_fields()
 
-        # Apply / OK / Cancel row (option B).
+        # Apply / OK / Cancel row (option B). For copy-enabled resource types a
+        # "Fill from…" button sits at the bottom-left; it refills the current
+        # object's fields from a chosen source (or resets to placeholders).
         btn_row = QHBoxLayout()
+        if type(self.obj).__name__ in self._COPY_FROM_TYPES:
+            copy_btn = QPushButton("Fill from…")
+            copy_btn.clicked.connect(self._on_copy_from)
+            btn_row.addWidget(copy_btn)
         btn_row.addStretch(1)
         apply_btn = QPushButton("Apply")
         ok_btn = QPushButton("OK")
@@ -179,6 +321,9 @@ class CzbirdDialog(QDialog):
         for b in (apply_btn, ok_btn, cancel_btn):
             btn_row.addWidget(b)
         outer.addLayout(btn_row)
+
+    # Resource types that offer an in-place "Fill from…" refill.
+    _COPY_FROM_TYPES = {"CZBIRDMethod", "CZBIRDTool", "CZBIRDSpecimen"}
 
     # Classes whose (description, iri) pair is mutually exclusive: exactly one
     # is used at a time. Rendered as a radio group rather than two rows.
@@ -375,6 +520,10 @@ class CzbirdDialog(QDialog):
                 def _remove(_=False, o=elem):
                     if len(value) > min_required:
                         value.remove(o)
+                        # The removed object takes its whole subtree out of the
+                        # record; move every resource in it to the deleted pool
+                        # so they stop being "current" but remain copy sources.
+                        REGISTRY.mark_deleted_tree(o)
                         render_rows()
                     else:
                         QMessageBox.information(
@@ -385,7 +534,12 @@ class CzbirdDialog(QDialog):
                 rows_layout.addWidget(r)
 
         def add_item(_=False) -> None:
-            value.append(P.prefill(elem_cls))
+            obj = P.prefill(elem_cls)
+            # A prefilled object may contain a whole nested tree of resources
+            # (a step creates a Method, a Tool, ...); register all of them so
+            # they become available as "Fill from…" sources.
+            REGISTRY.add_tree(obj)
+            value.append(obj)
             render_rows()
 
         render_rows()
@@ -440,6 +594,38 @@ class CzbirdDialog(QDialog):
         if self._apply():
             self.accept()
 
+    # ----------------------------------------------------------- copy-from --
+    def _on_copy_from(self) -> None:
+        """Refill this object's fields from a chosen source (or reset).
+
+        Opens the chooser in reset mode. On accept, copies every non-id field
+        from the source into the current object (keeping this object's own
+        internal_id), then rebuilds the form so the new values are shown.
+        """
+        # Commit any in-progress scalar edits first so they are not lost, but
+        # don't block on validation errors (the refill may fix them).
+        try:
+            for name, val in self._collect_scalars().items():
+                setattr(self.obj, name, val)
+        except ValidationError:
+            pass
+
+        dlg = AddResourceDialog(type(self.obj), self, reset_mode=True,
+                                exclude_obj=self.obj)
+        if dlg.exec() != QDialog.Accepted or dlg.result_obj is None:
+            return
+        R.copy_fields_into(self.obj, dlg.result_obj)
+        self._rebuild_form()
+
+    def _rebuild_form(self) -> None:
+        """Clear and regenerate all field widgets from the current object."""
+        self._scalar_getters.clear()
+        self._list_scalar_widgets.clear()
+        self._exclusive_getters.clear()
+        while self.form.rowCount():
+            self.form.removeRow(0)
+        self._build_fields()
+
 
 # --------------------------------------------------------------------------- #
 # Main window: hosts the root record + a live JSON preview.
@@ -449,6 +635,9 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("CZBIRD metadata editor (example)")
         self.record = P.prefill_Metadata()
+        # Register every resource object already present in the starting record
+        # so they are available as copy sources from the first click.
+        REGISTRY.seed_from_record(self.record)
 
         central = QWidget()
         self.setCentralWidget(central)
