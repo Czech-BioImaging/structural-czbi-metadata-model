@@ -491,10 +491,10 @@ Metadata:
       # the array itself is not required; but
       # if it is present, it has to contain something
       min_items: 1
-    publication_year:
+    publication_year:  # likely to be removed, 'cause it's in CCMM
       type: int
       required: true
-    version:
+    version:           # likely to be removed, 'cause it's in CCMM
       type: float
     was_generated_by:
       # exactly one profile must be chosen; profile_type is the discriminator
