@@ -42,6 +42,7 @@ CZBIRDDigitalObjectSink:
       type: keyword
       required: true
     data_label:
+      # substitutes Resource.title
       type: keyword
       required: true
     data_path:
@@ -61,6 +62,7 @@ CZBIRDDigitalImageSink:
       type: keyword
       required: true
     images_label:
+      # substitutes Resource.title
       type: keyword
       required: true
     images_path:
@@ -201,8 +203,9 @@ CZBIRDSamplePreparationStep:
         type: CZBIRDTool
       # min_items: 1 --> this step can be defined w/o a tool !!
       required: true
-    digital_object_sink:
-      # optional
+    aux_digital_object:
+      # optional, processing "side-effect" files, e.g.,
+      # room temperature, atm. pressure record, etc.
       type: array
       items:
         type: CZBIRDDigitalObjectSink
@@ -227,6 +230,11 @@ CZBIRDImageAcquisitionStep:
       required: true
 
 CZBIRDImageProcessingStep:
+  # represents a step whose primary purpose is to produce another
+  # batch of images that either is an input to another such step,
+  # or is recorded in CZBIRDProcessedPipeline.result_data_images
+  #
+  # (attrib-wise it is the same as CZBIRDImageAnalysisStep)
   type: object
   properties:
     step_label:
@@ -241,16 +249,24 @@ CZBIRDImageProcessingStep:
         type: CZBIRDTool
       min_items: 1
       required: true
-    digital_object_sink:
+    aux_digital_object:
+      # optional, processing "side-effect" files, e.g. log files
       type: array
       items:
         type: CZBIRDDigitalObjectSink
-    digital_image_sink:
+    aux_digital_image:
+      # optional, processing "side-effect" files, e.g. debug images
       type: array
       items:
         type: CZBIRDDigitalImageSink
 
 CZBIRDImageAnalysisStep:
+  # represents a step whose primary purpose is to extract information
+  # out of (implicit) input image(s) and save this information
+  # in a form of CZBIRDAnalysedPipeline.result_data_objects or
+  # CZBIRDAnalysedPipeline.result_data_images
+  #
+  # (attrib-wise it is the same as CZBIRDImageProcessingStep)
   type: object
   properties:
     step_label:
@@ -265,11 +281,13 @@ CZBIRDImageAnalysisStep:
         type: CZBIRDTool
       min_items: 1
       required: true
-    digital_object_sink:
+    aux_digital_object:
+      # optional, processing "side-effect" files, e.g. log files
       type: array
       items:
         type: CZBIRDDigitalObjectSink
-    digital_image_sink:
+    aux_digital_image:
+      # optional, processing "side-effect" files, e.g. debug images
       type: array
       items:
         type: CZBIRDDigitalImageSink
@@ -285,6 +303,7 @@ CZBIRDRawPipeline:
       type: CZBIRDSpecimen
       required: true
     sample_preparation_step:
+      # optional
       type: array
       items:
         type: CZBIRDSamplePreparationStep
@@ -299,9 +318,9 @@ CZBIRDProcessedPipeline:
   type: object
   properties:
     input_data_iri:
-      # PID-url or Invenio internal ref (qqqqq-wwwww) to input image data
       type: array
       items:
+        # PID-url or Invenio internal ref (qqqqq-wwwww) to input image data
         type: keyword
       min_items: 1
       required: true
@@ -312,7 +331,7 @@ CZBIRDProcessedPipeline:
         type: CZBIRDImageProcessingStep
       min_items: 1
       required: true
-    result_data:
+    result_data_images:
       # end-result images of the whole pipeline (intermediate outputs live in Steps)
       type: array
       items:
@@ -326,6 +345,7 @@ CZBIRDAnalysedPipeline:
     input_data_iri:
       type: array
       items:
+        # PID-url or Invenio internal ref (qqqqq-wwwww) to input image data
         type: keyword
       min_items: 1
       required: true
@@ -362,7 +382,7 @@ CZBIRDRawDataProfile:
     profile_type:
       type: keyword
       required: true
-    raw_data:
+    raw_data_acquisition:
       type: array
       items:
         type: CZBIRDRawPipeline
@@ -375,7 +395,7 @@ CZBIRDProcessedDataProfile:
     profile_type:
       type: keyword
       required: true
-    processed_data:
+    data_processing:
       type: array
       items:
         type: CZBIRDProcessedPipeline
@@ -388,7 +408,7 @@ CZBIRDAnalysedDataProfile:
     profile_type:
       type: keyword
       required: true
-    analysed_data:
+    data_analysing:
       type: array
       items:
         type: CZBIRDAnalysedPipeline
