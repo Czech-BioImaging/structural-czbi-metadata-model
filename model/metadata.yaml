@@ -196,7 +196,10 @@ CZBIRDSamplePreparationStep:
       type: CZBIRDMethod
       required: true
     employs_tool:
-      type: CZBIRDTool
+      type: array
+      items:
+        type: CZBIRDTool
+      # min_items: 1 --> this step can be defined w/o a tool !!
       required: true
     digital_object_sink:
       # optional
@@ -214,7 +217,10 @@ CZBIRDImageAcquisitionStep:
       type: CZBIRDMethod
       required: true
     employs_tool:
-      type: CZBIRDTool
+      type: array
+      items:
+        type: CZBIRDTool
+      min_items: 1
       required: true
     digital_image_sink:
       type: CZBIRDDigitalImageSink
@@ -230,7 +236,10 @@ CZBIRDImageProcessingStep:
       type: CZBIRDMethod
       required: true
     employs_tool:
-      type: CZBIRDTool
+      type: array
+      items:
+        type: CZBIRDTool
+      min_items: 1
       required: true
     digital_object_sink:
       type: array
@@ -251,7 +260,10 @@ CZBIRDImageAnalysisStep:
       type: CZBIRDMethod
       required: true
     employs_tool:
-      type: CZBIRDTool
+      type: array
+      items:
+        type: CZBIRDTool
+      min_items: 1
       required: true
     digital_object_sink:
       type: array
