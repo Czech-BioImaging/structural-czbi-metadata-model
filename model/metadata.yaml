@@ -139,18 +139,21 @@ CZBIRDMethod:
     internal_id:
       type: keyword
       required: true
-    description:
-      # OneOf description / iri — exactly one must be provided
-      type: fulltext
-    iri:
-      # OneOf description / iri — exactly one must be provided
-      type: keyword
     method_type_label:
       type: array
       items:
         type: CZBIRDOntologyTerm
       min_items: 1
       required: true
+    protocolA_name:
+      # items from exactly OneOf protocolA_ or protocolB_ must be provided
+      type: fulltext
+    protocolA_description:
+      # items from exactly OneOf protocolA_ or protocolB_ must be provided
+      type: fulltext
+    protocolB_iri:
+      # items from exactly OneOf protocolA_ or protocolB_ must be provided
+      type: keyword
 
 CZBIRDTool:
   type: object
@@ -166,15 +169,18 @@ CZBIRDTool:
     internal_id:
       type: keyword
       required: true
-    description:
-      # OneOf description / iri — exactly one must be provided
-      type: fulltext
-    iri:
-      # OneOf description / iri — exactly one must be provided
-      type: keyword
     is_software:
       type: boolean
       required: true
+    protocolA_name:
+      # items from exactly OneOf protocolA_ or protocolB_ must be provided
+      type: fulltext
+    protocolA_description:
+      # items from exactly OneOf protocolA_ or protocolB_ must be provided
+      type: fulltext
+    protocolB_iri:
+      # items from exactly OneOf protocolA_ or protocolB_ must be provided
+      type: keyword
 
 # ---------------------------------------------------------------------------
 # Processing steps (all flatten $ProcessingStep which has label/method/tool)
