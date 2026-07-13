@@ -118,6 +118,16 @@ def _min_items(finfo) -> int:
     return 0
 
 
+def _is_placeholder_tool(obj: BaseModel) -> bool:
+    """True for the dummy Tool a SamplePreparationStep carries but never shows.
+
+    Identified by its sentinel title (P.NO_TOOL_TITLE). Such tools exist only to
+    keep the model valid and must not appear as "Fill from…" sources.
+    """
+    return (type(obj).__name__ == "CZBIRDTool"
+            and getattr(obj, "title", None) == P.NO_TOOL_TITLE)
+
+
 def czbird_summary(obj: BaseModel) -> str:
     """Compact one-line summary of a nested object for row/field headers.
 
@@ -174,6 +184,11 @@ class AddResourceDialog(QDialog):
         if exclude_obj is not None:
             current = [o for o in current if o is not exclude_obj]
             deleted = [o for o in deleted if o is not exclude_obj]
+        # Hide the placeholder Tools that SamplePreparationStep carries only to
+        # satisfy the schema: they are never shown or edited, so they must not
+        # be offered as a source to fill a real Tool from.
+        current = [o for o in current if not _is_placeholder_tool(o)]
+        deleted = [o for o in deleted if not _is_placeholder_tool(o)]
 
         outer = QVBoxLayout(self)
         self._combo = QComboBox()
@@ -329,14 +344,23 @@ class CzbirdDialog(QDialog):
     # is used at a time. Rendered as a radio group rather than two rows.
     _EXCLUSIVE_PAIR = {"CZBIRDMethod", "CZBIRDTool"}
 
+    # Fields that exist in the model (and are kept valid) but are deliberately
+    # not shown or edited in the GUI, per class. A SamplePreparationStep must
+    # carry a Tool to satisfy the schema, but there is no meaningful tool to
+    # edit for it: the object is kept, marked with P.NO_TOOL_TITLE, and hidden.
+    _HIDDEN_FIELDS = {
+        "CZBIRDSamplePreparationStep": {"employs_tool"},
+    }
+
     # ---------------------------------------------------------------- build --
     def _build_fields(self) -> None:
         cls_name = type(self.obj).__name__
         exclusive = cls_name in self._EXCLUSIVE_PAIR
+        hidden = self._HIDDEN_FIELDS.get(cls_name, set())
         handled: set[str] = set()
 
         for name, finfo in type(self.obj).model_fields.items():
-            if name in handled:
+            if name in handled or name in hidden:
                 continue
             kind, detail = classify(finfo.annotation)
             value = getattr(self.obj, name)

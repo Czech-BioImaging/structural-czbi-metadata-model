@@ -23,6 +23,12 @@ from czbird import czbird_model as M
 
 PLACEHOLDER = "(not yet defined)"
 
+# Sentinel title for the Tool object that a SamplePreparationStep is required to
+# carry by the schema but which is never shown or edited in the GUI. Tools with
+# this title are filtered out of the "Fill from…" chooser, so they cannot be
+# picked as a source for a real tool.
+NO_TOOL_TITLE = "No tool for SamplePrep"
+
 
 # --------------------------------------------------------------------------- #
 # Leaf / low-level objects.
@@ -98,10 +104,15 @@ def prefill_CZBIRDTool() -> M.CZBIRDTool:
 # Steps.
 # --------------------------------------------------------------------------- #
 def prefill_CZBIRDSamplePreparationStep() -> M.CZBIRDSamplePreparationStep:
+    # The schema requires a Tool, but a sample-preparation step has no tool to
+    # speak of in this GUI: the object is kept (so the model stays valid) but is
+    # never displayed, and is marked with the NO_TOOL_TITLE sentinel.
+    no_tool = prefill_CZBIRDTool()
+    no_tool.title = NO_TOOL_TITLE
     return M.CZBIRDSamplePreparationStep(
         step_label=PLACEHOLDER,
         realizes_method=prefill_CZBIRDMethod(),
-        employs_tool=prefill_CZBIRDTool(),
+        employs_tool=no_tool,
         digital_object_sink=[],   # optional array: starts empty
     )
 
