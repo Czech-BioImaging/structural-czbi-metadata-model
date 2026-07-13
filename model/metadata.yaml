@@ -38,6 +38,9 @@ CZBIRDDigitalObjectSink:
       type: array
       items:
         type: fulltext
+      # the array itself is not required; but
+      # if it is present, it has to contain something
+      min_items: 1
     internal_id:
       type: keyword
       required: true
@@ -58,6 +61,9 @@ CZBIRDDigitalImageSink:
       type: array
       items:
         type: fulltext
+      # the array itself is not required; but
+      # if it is present, it has to contain something
+      min_items: 1
     internal_id:
       type: keyword
       required: true
@@ -107,6 +113,9 @@ CZBIRDSpecimen:
       type: array
       items:
         type: fulltext
+      # the array itself is not required; but
+      # if it is present, it has to contain something
+      min_items: 1
     internal_id:
       type: keyword
       required: true
@@ -138,6 +147,9 @@ CZBIRDMethod:
       type: array
       items:
         type: fulltext
+      # the array itself is not required; but
+      # if it is present, it has to contain something
+      min_items: 1
     internal_id:
       type: keyword
       required: true
@@ -168,6 +180,9 @@ CZBIRDTool:
       type: array
       items:
         type: fulltext
+      # the array itself is not required; but
+      # if it is present, it has to contain something
+      min_items: 1
     internal_id:
       type: keyword
       required: true
@@ -209,6 +224,9 @@ CZBIRDSamplePreparationStep:
       type: array
       items:
         type: CZBIRDDigitalObjectSink
+      # the array itself is not required; but
+      # if it is present, it has to contain something
+      min_items: 1
 
 CZBIRDImageAcquisitionStep:
   type: object
@@ -230,6 +248,9 @@ CZBIRDImageAcquisitionStep:
       type: array
       items:
         type: CZBIRDDigitalObjectSink
+      # the array itself is not required; but
+      # if it is present, it has to contain something
+      min_items: 1
     main_digital_image:
       # mandatory, and at least one
       # (assuming! scopes are not producing aux debug images)
@@ -264,11 +285,17 @@ CZBIRDImageProcessingStep:
       type: array
       items:
         type: CZBIRDDigitalObjectSink
+      # the array itself is not required; but
+      # if it is present, it has to contain something
+      min_items: 1
     aux_digital_image:
       # optional, processing "side-effect" files, e.g. debug images
       type: array
       items:
         type: CZBIRDDigitalImageSink
+      # the array itself is not required; but
+      # if it is present, it has to contain something
+      min_items: 1
 
 CZBIRDImageAnalysisStep:
   # represents a step whose primary purpose is to extract information
@@ -296,11 +323,17 @@ CZBIRDImageAnalysisStep:
       type: array
       items:
         type: CZBIRDDigitalObjectSink
+      # the array itself is not required; but
+      # if it is present, it has to contain something
+      min_items: 1
     aux_digital_image:
       # optional, processing "side-effect" files, e.g. debug images
       type: array
       items:
         type: CZBIRDDigitalImageSink
+      # the array itself is not required; but
+      # if it is present, it has to contain something
+      min_items: 1
 
 # ---------------------------------------------------------------------------
 # Profile content types (the actual pipelines carried by each profile)
@@ -317,6 +350,9 @@ CZBIRDRawPipeline:
       type: array
       items:
         type: CZBIRDSamplePreparationStep
+      # the array itself is not required; but
+      # if it is present, it has to contain something
+      min_items: 1
     image_acquisition_step:
       type: array
       items:
@@ -364,6 +400,9 @@ CZBIRDAnalysedPipeline:
       type: array
       items:
         type: CZBIRDImageProcessingStep
+      # the array itself is not required; but
+      # if it is present, it has to contain something
+      min_items: 1
     image_analysis_step:
       # listed in execution order
       type: array
@@ -376,11 +415,13 @@ CZBIRDAnalysedPipeline:
       type: array
       items:
         type: CZBIRDDigitalObjectSink
+      required: true
     result_data_images:
       # end-result image outputs; result_data_objects + result_data_images combined >= 1
       type: array
       items:
         type: CZBIRDDigitalImageSink
+      required: true
 
 # ---------------------------------------------------------------------------
 # Record profiles — discriminated via profile_type for the polymorphic field
@@ -447,6 +488,9 @@ Metadata:
       type: array
       items:
         type: fulltext
+      # the array itself is not required; but
+      # if it is present, it has to contain something
+      min_items: 1
     publication_year:
       type: int
       required: true
