@@ -225,8 +225,18 @@ CZBIRDImageAcquisitionStep:
         type: CZBIRDTool
       min_items: 1
       required: true
-    digital_image_sink:
-      type: CZBIRDDigitalImageSink
+    aux_digital_object:
+      # optional, processing "side-effect" files, e.g. log files
+      type: array
+      items:
+        type: CZBIRDDigitalObjectSink
+    main_digital_image:
+      # mandatory, and at least one
+      # (assuming! scopes are not producing aux debug images)
+      type: array
+      items:
+        type: CZBIRDDigitalImageSink
+      min_items: 1
       required: true
 
 CZBIRDImageProcessingStep:
