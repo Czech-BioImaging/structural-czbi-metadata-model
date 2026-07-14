@@ -146,6 +146,7 @@ Tool:
 
 MethodsAndTools:
 - $Resource                           -- title+addNote of the specific methodology or tool
+                                      -- Resource.IRIs/URL,Location,Time,Person is NOT used for Method, it is used only for Tool
 - OneOf [ Description: pair(str), =1 ], [ IRI: str, =1 ]
                                       -- explains the methodology/tool verbosely, or outsources the description by providing an IRI to the description
                                       -- Description-variant is a multi-line text area
