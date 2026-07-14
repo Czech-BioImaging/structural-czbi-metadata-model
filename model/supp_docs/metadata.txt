@@ -1,8 +1,6 @@
 Metadata:                         -- entry point
-- [ RecordTitle, =1]              -- is coming from CCMM, basically; simulates what $Resource would do; OR, there should be one for each item in the profile array?
-- [ AdditionalNote, >=0 ]         -- is coming from CCMM, basically; simulates what $Resource would do; OR, there should be one for each item in the profile array?
-- [ PublicationYear: int, =1 ]    -- release year, not necessarily the same as the "DateInfo" in CCMM
-- [ Version: float, <=1 ]         -- release version; allows for repetition and changes monitoring
+- [ InternalRecordTitle, =1]      -- not meant for real life action!
+                                  -- included here only to avoid having an empty entity
 - WasGeneratedBy, =1: OneOf [ RawDataProfile, >=1 ], [ ProcessedDataProfile, >=1 ],
                             [ AnalysedDataProfile, >=1 ], [ GeneralRecordProfile, =1 ]
 
