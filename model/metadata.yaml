@@ -1,10 +1,19 @@
 # CzBIRD metadata model — NRP Invenio schema
 # Converted from metadata.yaml (human-readable specification)
 #
-# Inheritance ($Resource, $ProcessingStep, $MethodsAndTools) is flattened into
+# Inheritance ($ProcessingStep, $MethodsAndTools) is flattened into
 # each concrete type since NRP has no inheritance mechanism.
 #
-# Naming: custom types use PascalCase with CZBIRD prefix; property names use snake_case.
+# The $Resource -> $RelatedResource relation is flattened into a shortcut
+# entity $ResourceAnnotation (which exists only here, it is not present
+# in the official model), and it is referenced in the relevant types (not
+# flattened/pasted into them like it is with the $ProcessingStep). Only
+# the original (model's) Resource.Title is flattened into the types,
+# allowing the types to use their own names variant for it.
+#
+# Naming:
+#   custom types use PascalCase with CZBIRD prefix;
+#   property names use snake_case.
 
 # ---------------------------------------------------------------------------
 # Leaf types (no dependencies on other CZBIRD types)
@@ -27,6 +36,57 @@ CZBIRDOntologyTerm:
       required: true
     term_is_definite:
       type: boolean
+      required: true
+
+CZBIRDResourceAnnotation:
+  # Flattened from $Resource + $RelatedResource
+  type: object
+  properties:
+    resource_iri: # implements has_identifier relation
+      # optional list of (alternative, official) _identifiers_ (names) of this resource
+      type: array
+      items:
+        type: keyword  #TODO: should be CCMM.Identifier
+      # the array itself is not required; but
+      # if it is present, it has to contain something
+      min_items: 1
+    resource_url:
+      # optional _location_ to this resource
+      type: keyword
+    time_reference:
+      # optional
+      type: array
+      items:
+        type: keyword  #TODO: should be CCMM.TimeReference
+      # the array itself is not required; but
+      # if it is present, it has to contain something
+      min_items: 1
+    location:
+      # optional
+      type: array
+      items:
+        type: keyword  #TODO: should be CCMM.Location
+      # the array itself is not required; but
+      # if it is present, it has to contain something
+      min_items: 1
+    delivered_by:
+      # optional
+      type: array
+      items:
+        type: keyword  #TODO: should be CCMM.Person or CCMM.ResourceAttribution
+      # the array itself is not required; but
+      # if it is present, it has to contain something
+      min_items: 1
+    additional_note:
+      # optional
+      type: array
+      items:
+        type: fulltext
+      # the array itself is not required; but
+      # if it is present, it has to contain something
+      min_items: 1
+    internal_id:
+      type: keyword
       required: true
 
 CZBIRDDigitalObjectSink:
