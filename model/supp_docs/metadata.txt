@@ -35,14 +35,14 @@ GeneralRecordProfile:
 
 Resource:                         -- will be used with '$' which denotes inheriting all items of the Resource
                                   -- Resource is expected to be associated with PID(s)
-                                  -- it can be currently Specimen, ProcessingStep or Digital*Sink
+                                  -- it can be currently Specimen, ProcessingStep (in fact, MethodAndTool) or Digital*Sink
 - [ Title, <=1 ]                  -- title of this particular item, which is not a CCMM-wrapped full record
 - [ ResourceIRI: str, >=0 ]       -- other available/known identifications of this particular item
-                                  -- instead of str(ing), the type should be CCMM.Identifier
+                                  -- instead of str(ing), the type should be CCMM.Identifier, realizes CCMM.Resource.has_identifier
 - [ ResourceURL: str, <=1 ]       -- reference on this particular item, will probably be "guessed" from Invenio's URLs-building pattern
-- [ TimeReference: str, >=0 ]     -- the type should be CCMM.TimeReference
-- [ Location: str, >=0 ]          -- the type should be CCMM.Location
-- [ DeliveredBy: str, >=0 ]       -- the type should be CCMM.Person
+- [ TimeReference: str, >=0 ]     -- the type should be CCMM.TimeReference, realizes CCMM.Resource.has_time_reference
+- [ Location: str, >=0 ]          -- the type should be CCMM.Location, realizes CCMM.Resource.has_location
+- [ DeliveredBy: str, >=0 ]       -- the type should be CCMM.ResourceAttribution, realizes CCMM.Resource.qualified_attribution
 - [ AdditionalNote, >=0 ]
 - [ InternalID, =1 ]              -- !optional! when reusing a $Resource in another Specimen or ProcessingStep (or in another
                                      derivate of a Resource), the $Resource is verbatim copied incl. InternalID (this allows
