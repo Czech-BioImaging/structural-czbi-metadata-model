@@ -428,7 +428,7 @@ CZBIRDProcessedPipeline:
         type: CZBIRDImageProcessingStep
       min_items: 1
       required: true
-    result_data_images:
+    result_data_image:
       # end-result images of the whole pipeline (intermediate outputs live in Steps)
       type: array
       items:
@@ -461,13 +461,13 @@ CZBIRDAnalysedPipeline:
         type: CZBIRDImageAnalysisStep
       min_items: 1
       required: true
-    result_data_objects:
+    result_data_object:
       # end-result non-image outputs; result_data_objects + result_data_images combined >= 1
       type: array
       items:
         type: CZBIRDDigitalObjectSink
       required: true
-    result_data_images:
+    result_data_image:
       # end-result image outputs; result_data_objects + result_data_images combined >= 1
       type: array
       items:
@@ -540,11 +540,11 @@ Metadata:
       discriminator: profile_type
       required: true
       oneof:
-        - discriminator: rawData
+        - discriminator: raw_data
           type: CZBIRDRawDataProfile
-        - discriminator: processedData
+        - discriminator: processed_data
           type: CZBIRDProcessedDataProfile
-        - discriminator: analysedData
+        - discriminator: analysed_data
           type: CZBIRDAnalysedDataProfile
-        - discriminator: generalRecord
+        - discriminator: general_record
           type: CZBIRDGeneralRecordProfile
