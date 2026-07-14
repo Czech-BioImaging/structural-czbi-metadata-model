@@ -169,7 +169,7 @@ CZBIRDSpecimen:
 
 # ---------------------------------------------------------------------------
 # Method and Tool (both flatten $MethodsAndTools which flattens $Resource)
-# with OneOf [name+description] / [iri] attribute
+# with OneOf [name+description] / [URL] attribute
 # ---------------------------------------------------------------------------
 
 CZBIRDMethod:
@@ -246,7 +246,7 @@ CZBIRDReference:
     description_type:
       type: keyword
       required: true
-    iri:
+    url:
       type: keyword
       required: true
 
@@ -414,10 +414,10 @@ CZBIRDRawPipeline:
 CZBIRDProcessedPipeline:
   type: object
   properties:
-    input_data_iri:
+    input_data_url:
       type: array
       items:
-        # PID-url or Invenio internal ref (qqqqq-wwwww) to input image data
+        # PID-URL or Invenio internal ref (qqqqq-wwwww) to input image data
         type: keyword
       min_items: 1
       required: true
@@ -439,10 +439,10 @@ CZBIRDProcessedPipeline:
 CZBIRDAnalysedPipeline:
   type: object
   properties:
-    input_data_iri:
+    input_data_url:
       type: array
       items:
-        # PID-url or Invenio internal ref (qqqqq-wwwww) to input image data
+        # PID-URL or Invenio internal ref (qqqqq-wwwww) to input image data
         type: keyword
       min_items: 1
       required: true

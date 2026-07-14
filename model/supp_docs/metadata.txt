@@ -10,7 +10,7 @@ RawDataProfile:
 - [ ImageAcquisitionStep, >=1 ]
 
 ProcessedDataProfile:
-- [ InputDataIRI: str, >=1 ]      -- explicit reference on input image data for this run by means of:
+- [ InputDataURL: str, >=1 ]      -- explicit reference on input image data for this run by means of:
                                   -- preferably a PID-url to an external service (where are persistently reachable images)
                                   -- ref/PID-url to final/published record from this repo ('ref' means Invenio's qqqqq-wwwww internal record ID)
                                   -- ref to draft record from this repo ('ref' means Invenio's qqqqq-wwwww internal record ID)
@@ -19,7 +19,7 @@ ProcessedDataProfile:
                                              note that the individual Steps are allowed to produce their own "intermediate" Digital*Sinks
 
 AnalysedDataProfile:
-- [ InputDataIRI: str, >=1 ]      -- explicit reference on input image data for this run by means of:
+- [ InputDataURL: str, >=1 ]      -- explicit reference on input image data for this run by means of:
                                   -- preferably a PID-url to an external service (where are persistently reachable images)
                                   -- ref/PID-url to final/published record from this repo ('ref' means Invenio's qqqqq-wwwww internal record ID)
                                   -- ref to draft record from this repo ('ref' means Invenio's qqqqq-wwwww internal record ID)
@@ -147,14 +147,14 @@ Tool:
 MethodsAndTools:
 - $Resource                           -- title+addNote of the specific methodology or tool
                                       -- Resource.IRIs/URL,Location,Time,Person is NOT used for Method, it is used only for Tool
-- OneOf [ Description: pair(str), =1 ], [ IRI: str, =1 ]
-                                      -- explains the methodology/tool verbosely, or outsources the description by providing an IRI to the description
+- OneOf [ Description: pair(str), =1 ], [ URL: str, =1 ]
+                                      -- explains the methodology/tool verbosely, or outsources the description by providing an URL to the description
                                       -- Description-variant is a multi-line text area
-                                      -- IRI-variant is a single-line form (for one URL)
+                                      -- URL-variant is a single-line form (for one URL)
 
 Description:
 - protocol_name: str, =1
 - protocol_description: str, =1
 
-IRI:
-- protocol_iri: str, =1
+URL:
+- protocol_url: str, =1
