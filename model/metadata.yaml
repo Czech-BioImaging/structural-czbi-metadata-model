@@ -169,7 +169,7 @@ CZBIRDSpecimen:
 
 # ---------------------------------------------------------------------------
 # Method and Tool (both flatten $MethodsAndTools which flattens $Resource)
-# OneOf [description] / [iri] constraint must be enforced by the UI layer.
+# with OneOf [name+description] / [iri] attribute
 # ---------------------------------------------------------------------------
 
 CZBIRDMethod:
@@ -195,15 +195,15 @@ CZBIRDMethod:
     internal_id:
       type: keyword
       required: true
-    protocolA_name:
-      # items from exactly OneOf protocolA_ or protocolB_ must be provided
-      type: fulltext
-    protocolA_description:
-      # items from exactly OneOf protocolA_ or protocolB_ must be provided
-      type: fulltext
-    protocolB_iri:
-      # items from exactly OneOf protocolA_ or protocolB_ must be provided
-      type: keyword
+    method_description:
+      type: polymorphic
+      discriminator: description_type
+      required: true
+      oneof:
+        - discriminator: explicit_description
+          type: CZBIRDFulltextDescription
+        - discriminator: reference_to_description
+          type: CZBIRDReference
 
 CZBIRDTool:
   type: object
@@ -214,18 +214,41 @@ CZBIRDTool:
     is_software:
       type: boolean
       required: true
-    protocolA_name:
-      # items from exactly OneOf protocolA_ or protocolB_ must be provided
-      type: fulltext
-    protocolA_description:
-      # items from exactly OneOf protocolA_ or protocolB_ must be provided
+    tool_description:
+      type: polymorphic
+      discriminator: description_type
+      required: true
+      oneof:
+        - discriminator: explicit_description
+          type: CZBIRDFulltextDescription
+        - discriminator: reference_to_description
+          type: CZBIRDReference
     additional_annotation:
       type: CZBIRDResourceAnnotation
       required: true
-      type: fulltext
-    protocolB_iri:
-      # items from exactly OneOf protocolA_ or protocolB_ must be provided
+
+CZBIRDFulltextDescription:
+  type: object
+  properties:
+    description_type:
       type: keyword
+      required: true
+    title:
+      type: fulltext+keyword
+      required: true
+    description:
+      type: fulltext
+      required: true
+
+CZBIRDReference:
+  type: object
+  properties:
+    description_type:
+      type: keyword
+      required: true
+    iri:
+      type: keyword
+      required: true
 
 # ---------------------------------------------------------------------------
 # Processing steps (all flatten $ProcessingStep which has label/method/tool)
