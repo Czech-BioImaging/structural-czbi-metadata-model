@@ -1,8 +1,6 @@
 Metadata:                         -- entry point
-- [ RecordTitle, =1]              -- is coming from CCMM, basically; simulates what $Resource would do; OR, there should be one for each item in the profile array?
-- [ AdditionalNote, >=0 ]         -- is coming from CCMM, basically; simulates what $Resource would do; OR, there should be one for each item in the profile array?
-- [ PublicationYear: int, =1 ]    -- release year, not necessarily the same as the "DateInfo" in CCMM
-- [ Version: float, <=1 ]         -- release version; allows for repetition and changes monitoring
+- [ InternalRecordTitle, =1]      -- not meant for real life action!
+                                  -- included here only to avoid having an empty entity
 - WasGeneratedBy, =1: OneOf [ RawDataProfile, >=1 ], [ ProcessedDataProfile, >=1 ],
                             [ AnalysedDataProfile, >=1 ], [ GeneralRecordProfile, =1 ]
 
@@ -39,6 +37,12 @@ Resource:                         -- will be used with '$' which denotes inherit
                                   -- Resource is expected to be associated with PID(s)
                                   -- it can be currently Specimen, ProcessingStep or Digital*Sink
 - [ Title, <=1 ]                  -- title of this particular item, which is not a CCMM-wrapped full record
+- [ ResourceIRI: str, >=0 ]       -- other available/known identifications of this particular item
+                                  -- instead of str(ing), the type should be CCMM.Identifier
+- [ ResourceURL: str, <=1 ]       -- reference on this particular item, will probably be "guessed" from Invenio's URLs-building pattern
+- [ TimeReference: str, >=0 ]     -- the type should be CCMM.TimeReference
+- [ Location: str, >=0 ]          -- the type should be CCMM.Location
+- [ DeliveredBy: str, >=0 ]       -- the type should be CCMM.Person
 - [ AdditionalNote, >=0 ]
 - [ InternalID, =1 ]              -- !optional! when reusing a $Resource in another Specimen or ProcessingStep (or in another
                                      derivate of a Resource), the $Resource is verbatim copied incl. InternalID (this allows
@@ -142,6 +146,7 @@ Tool:
 
 MethodsAndTools:
 - $Resource                           -- title+addNote of the specific methodology or tool
+                                      -- Resource.IRIs/URL,Location,Time,Person is NOT used for Method, it is used only for Tool
 - OneOf [ Description: pair(str), =1 ], [ IRI: str, =1 ]
                                       -- explains the methodology/tool verbosely, or outsources the description by providing an IRI to the description
                                       -- Description-variant is a multi-line text area
