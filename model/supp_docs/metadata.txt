@@ -44,12 +44,6 @@ Resource:                         -- will be used with '$' which denotes inherit
 - [ Location: str, >=0 ]          -- the type should be CCMM.Location, realizes CCMM.Resource.has_location
 - [ DeliveredBy: str, >=0 ]       -- the type should be CCMM.ResourceAttribution, realizes CCMM.Resource.qualified_attribution
 - [ AdditionalNote, >=0 ]
-- [ InternalID, =1 ]              -- !optional! when reusing a $Resource in another Specimen or ProcessingStep (or in another
-                                     derivate of a Resource), the $Resource is verbatim copied incl. InternalID (this allows
-                                     to detect multiple usage of the same Resource), and setters of a Resource (Specimen, etc.)
-                                     will also set a new unique InternalID with every change (which assures that the changed
-                                     Resource will be understood as unique again)
-                                  -- the InternalID could be a random hash (that requires no synchronization, allows for parallel editing)
 
 OntologyTerm:
 - [ OntologyName, =1 ]            -- common name under which the ontology is recognized

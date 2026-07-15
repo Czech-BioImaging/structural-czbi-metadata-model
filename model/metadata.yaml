@@ -85,9 +85,6 @@ CZBIRDResourceAnnotation:
       # the array itself is not required; but
       # if it is present, it has to contain something
       min_items: 1
-    internal_id:
-      type: keyword
-      required: true
 
 CZBIRDDigitalObjectSink:
   # Resource.title is replaced here by data_label
@@ -192,9 +189,6 @@ CZBIRDMethod:
       # the array itself is not required; but
       # if it is present, it has to contain something
       min_items: 1
-    internal_id:
-      type: keyword
-      required: true
     method_description:
       type: polymorphic
       discriminator: description_type
