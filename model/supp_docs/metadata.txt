@@ -1,8 +1,6 @@
 Metadata:                         -- entry point
-- [ RecordTitle, =1]              -- is coming from CCMM, basically; simulates what $Resource would do; OR, there should be one for each item in the profile array?
-- [ AdditionalNote, >=0 ]         -- is coming from CCMM, basically; simulates what $Resource would do; OR, there should be one for each item in the profile array?
-- [ PublicationYear: int, =1 ]    -- release year, not necessarily the same as the "DateInfo" in CCMM
-- [ Version: float, <=1 ]         -- release version; allows for repetition and changes monitoring
+- [ InternalRecordTitle, =1]      -- not meant for real life action!
+                                  -- included here only to avoid having an empty entity
 - WasGeneratedBy, =1: OneOf [ RawDataProfile, >=1 ], [ ProcessedDataProfile, >=1 ],
                             [ AnalysedDataProfile, >=1 ], [ GeneralRecordProfile, =1 ]
 
@@ -12,7 +10,7 @@ RawDataProfile:
 - [ ImageAcquisitionStep, >=1 ]
 
 ProcessedDataProfile:
-- [ InputDataIRI: str, >=1 ]      -- explicit reference on input image data for this run by means of:
+- [ InputDataURL: str, >=1 ]      -- explicit reference on input image data for this run by means of:
                                   -- preferably a PID-url to an external service (where are persistently reachable images)
                                   -- ref/PID-url to final/published record from this repo ('ref' means Invenio's qqqqq-wwwww internal record ID)
                                   -- ref to draft record from this repo ('ref' means Invenio's qqqqq-wwwww internal record ID)
@@ -21,7 +19,7 @@ ProcessedDataProfile:
                                              note that the individual Steps are allowed to produce their own "intermediate" Digital*Sinks
 
 AnalysedDataProfile:
-- [ InputDataIRI: str, >=1 ]      -- explicit reference on input image data for this run by means of:
+- [ InputDataURL: str, >=1 ]      -- explicit reference on input image data for this run by means of:
                                   -- preferably a PID-url to an external service (where are persistently reachable images)
                                   -- ref/PID-url to final/published record from this repo ('ref' means Invenio's qqqqq-wwwww internal record ID)
                                   -- ref to draft record from this repo ('ref' means Invenio's qqqqq-wwwww internal record ID)
@@ -37,15 +35,15 @@ GeneralRecordProfile:
 
 Resource:                         -- will be used with '$' which denotes inheriting all items of the Resource
                                   -- Resource is expected to be associated with PID(s)
-                                  -- it can be currently Specimen, ProcessingStep or Digital*Sink
+                                  -- it can be currently Specimen, ProcessingStep (in fact, MethodAndTool) or Digital*Sink
 - [ Title, <=1 ]                  -- title of this particular item, which is not a CCMM-wrapped full record
+- [ ResourceIRI: str, >=0 ]       -- other available/known identifications of this particular item
+                                  -- instead of str(ing), the type should be CCMM.Identifier, realizes CCMM.Resource.has_identifier
+- [ ResourceURL: str, <=1 ]       -- reference on this particular item, will probably be "guessed" from Invenio's URLs-building pattern
+- [ TimeReference: str, >=0 ]     -- the type should be CCMM.TimeReference, realizes CCMM.Resource.has_time_reference
+- [ Location: str, >=0 ]          -- the type should be CCMM.Location, realizes CCMM.Resource.has_location
+- [ DeliveredBy: str, >=0 ]       -- the type should be CCMM.ResourceAttribution, realizes CCMM.Resource.qualified_attribution
 - [ AdditionalNote, >=0 ]
-- [ InternalID, =1 ]              -- !optional! when reusing a $Resource in another Specimen or ProcessingStep (or in another
-                                     derivate of a Resource), the $Resource is verbatim copied incl. InternalID (this allows
-                                     to detect multiple usage of the same Resource), and setters of a Resource (Specimen, etc.)
-                                     will also set a new unique InternalID with every change (which assures that the changed
-                                     Resource will be understood as unique again)
-                                  -- the InternalID could be a random hash (that requires no synchronization, allows for parallel editing)
 
 OntologyTerm:
 - [ OntologyName, =1 ]            -- common name under which the ontology is recognized
@@ -94,17 +92,19 @@ SamplePreparationStep:
 
 ImageAcquisitionStep:             -- "rebrands" (Processed)Specimen into a Sample, and connects it with its deposited images
 - $ProcessingStep                 -- describes the "digitization" process
-- [ DigitalImageSink, =1 ]        -- describes the deposited images
+- [ DigitalObjectSink, >=0 ]      -- optional side-output of this particular step, e.g. room temperature measurements during acquisition
+- [ DigitalImageSink, >=1 ]       -- describes the deposited images
+                                  -- can hold multiple imaging sessions of the same instrument capturing the same specimen
 
 ImageProcessingStep:
 - $ProcessingStep
-- [ DigitalObjectSink, >=0 ]      -- optional side-output of this particular step, e.g. a log file of the computing, or debug image(s)
-- [ DigitalImageSink, >=0 ]       -- optional side-output deposited images
+- [ DigitalObjectSink, >=0 ]      -- optional side-output of this particular step, e.g. a log file of the computing
+- [ DigitalImageSink, >=0 ]       -- optional side-output of this particular step, e.g. debug images
 
 ImageAnalysisStep:
 - $ProcessingStep
-- [ DigitalObjectSink, >=0 ]      -- optional side-output of this particular step, e.g. a log file of the computing, or debug image(s)
-- [ DigitalImageSink, >=0 ]       -- optional side-output deposited images
+- [ DigitalObjectSink, >=0 ]      -- optional side-output of this particular step, e.g. a log file of the computing
+- [ DigitalImageSink, >=0 ]       -- optional side-output of this particular step, e.g. debug images
 
 DigitalObjectSink:                -- placeholder to make a connection between deposited "S3 folder" (piece of data) with _any_ files
                                   -- it shows www developers when to ask for files
@@ -127,7 +127,8 @@ DigitalImageSink:                 -- placeholder to make a connection between de
 ProcessingStep:                       -- needs to be "instantiated" with per-step different lists of ontologies (one list for methods, one for tools)
 - [ StepLabel: str, =1 ]              -- basically a user's nickname/tag for this step; at worst autogenerated by the UI (e.q. SP3, IA8)
 - [ RealizesMethod: Method, =1 ]      -- ("realizes method"), methodology, kind of action taken, e.g. Convolution, Segmentation
-- [ EmploysTool: Tool, =1 ]           -- ("has employed tool"), tool to realize the methodology or the action, e.g. Huygens, Cellpose
+- [ EmploysTool: Tool, >=0 ]          -- ("has employed tool"), tool to realize the methodology or the action, e.g. Huygens, Cellpose
+                                      --  >=0 for SamplePreparationStep, >=1 for all other steps
 
 Method:
 - $MethodsAndTools
@@ -139,8 +140,15 @@ Tool:
 
 MethodsAndTools:
 - $Resource                           -- title+addNote of the specific methodology or tool
-- OneOf [ Description: str, =1 ], [ IRI: str, =1 ]
-                                      -- explains the methodology/tool verbosely, or outsources the description by providing an IRI to the description
+                                      -- Resource.IRIs/URL,Location,Time,Person is NOT used for Method, it is used only for Tool
+- OneOf [ Description: pair(str), =1 ], [ URL: str, =1 ]
+                                      -- explains the methodology/tool verbosely, or outsources the description by providing an URL to the description
                                       -- Description-variant is a multi-line text area
-                                      -- IRI-variant is a single-line form (for one URL)
+                                      -- URL-variant is a single-line form (for one URL)
 
+Description:
+- protocol_name: str, =1
+- protocol_description: str, =1
+
+URL:
+- protocol_url: str, =1
