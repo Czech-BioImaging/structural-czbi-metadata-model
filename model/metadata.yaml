@@ -167,9 +167,6 @@ CZBIRDSpecimen:
 CZBIRDMethod:
   type: object
   properties:
-    title:
-      # optional
-      type: fulltext+keyword
     method_type_label:
       type: array
       items:
@@ -189,9 +186,6 @@ CZBIRDMethod:
 CZBIRDTool:
   type: object
   properties:
-    title:
-      # optional
-      type: fulltext+keyword
     is_software:
       type: boolean
       required: true
