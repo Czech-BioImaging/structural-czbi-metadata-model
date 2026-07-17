@@ -90,25 +90,14 @@ CZBIRDDigitalObjectSink:
   # Resource.title is replaced here by data_label
   type: object
   properties:
-    data_label:
-      # substitutes Resource.title
-      type: keyword
-      required: true
     data_path:
       type: keyword
-      required: true
-    additional_annotation:
-      type: CZBIRDResourceAnnotation
       required: true
 
 CZBIRDDigitalImageSink:
   # Resource.title is replaced here by images_label
   type: object
   properties:
-    images_label:
-      # substitutes Resource.title
-      type: keyword
-      required: true
     images_path:
       type: keyword
       required: true
@@ -116,9 +105,6 @@ CZBIRDDigitalImageSink:
       # optional
       # format: "key1=value1;key2=value2;..." — all metadata from uploaded image files
       type: keyword
-    additional_annotation:
-      type: CZBIRDResourceAnnotation
-      required: true
 
 # ---------------------------------------------------------------------------
 # Biological identity chain: OntologyTerm → Taxon → Organism → Specimen
