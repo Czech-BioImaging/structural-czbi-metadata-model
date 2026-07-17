@@ -146,9 +146,18 @@ CZBIRDSpecimen:
         type: CZBIRDOntologyTerm
       min_items: 1
       required: true
-    additional_annotation:
-      type: CZBIRDResourceAnnotation
-      required: true
+    date_of_collection:  # only here to match with Figma_v1.2, but slatted for removal
+      type: keyword
+    place_of_collection: # only here to match with Figma_v1.2, but slatted for removal
+      type: keyword
+    additional_note:
+      # optional
+      type: array
+      items:
+        type: fulltext
+      # the array itself is not required; but
+      # if it is present, it has to contain something
+      min_items: 1
 
 # ---------------------------------------------------------------------------
 # Method and Tool (both flatten $MethodsAndTools which flattens $Resource)
