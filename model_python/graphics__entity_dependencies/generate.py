@@ -125,7 +125,7 @@ def render_polymorphic_alias(field_spec: dict) -> tuple[str, list[str]]:
     return alias, members
 
 
-def main(path: str) -> None:
+def main(path: str, out_path: str = "czbird_model.py") -> None:
     with open(path) as f:
         schema = yaml.safe_load(f)
 
@@ -141,9 +141,13 @@ def main(path: str) -> None:
 
     header = '''"""CZBIRD metadata model — Pydantic v2 models generated from metadata.yaml.
 
-Auto-generated. Each class validates on construction AND on attribute
-assignment (model_config validate_assignment=True), giving you type-checked
-setters without hand-written @property code.
+AUTO-GENERATED — do not edit by hand. Regenerate with:
+
+    python generate.py metadata.yaml -o czbird/czbird_model.py
+
+Each class validates on construction AND on attribute assignment
+(validate_assignment=True), giving type-checked setters without hand-written
+@property code.
 """
 from __future__ import annotations
 
@@ -190,10 +194,19 @@ class _Base(BaseModel):
     out.append("\nMetadata.model_rebuild()\n")
 
     code = "\n\n".join(out)
-    with open("/home/claude/gen/czbird_model.py", "w") as f:
+    with open(out_path, "w") as f:
         f.write(code)
-    print("wrote czbird_model.py")
+    print(f"wrote {out_path}")
 
 
 if __name__ == "__main__":
-    main(sys.argv[1] if len(sys.argv) > 1 else "metadata.yaml")
+    import argparse
+
+    ap = argparse.ArgumentParser(
+        description="Generate czbird_model.py (Pydantic v2) from the NRP YAML schema.")
+    ap.add_argument("yaml", nargs="?", default="metadata.yaml",
+                    help="path to metadata.yaml (default: ./metadata.yaml)")
+    ap.add_argument("-o", "--out", default="czbird_model.py",
+                    help="output .py path (default: ./czbird_model.py)")
+    args = ap.parse_args()
+    main(args.yaml, args.out)
