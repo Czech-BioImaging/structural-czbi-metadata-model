@@ -293,6 +293,10 @@ CZBIRDImageAcquisitionStep:
       type: array
       items:
         type: CZBIRDDigitalObjectSink
+        # how to fill this sink item?
+        # ObjectSink.data_label = the UI's Sample name plus " aux data"
+        # ObjectSink.data_path = specimen_name/sample_name/imaging_name/additional_files
+        # ObjectSink.additional_annotation = None/null (for now)
       # the array itself is not required; but
       # if it is present, it has to contain something
       min_items: 1
@@ -302,6 +306,11 @@ CZBIRDImageAcquisitionStep:
       type: array
       items:
         type: CZBIRDDigitalImageSink
+        # how to fill this sink item?
+        # ImageSink.images_label = the UI's Sample name plus " acquired images"
+        # ImageSink.images_path = specimen_name/sample_name/imaging_name/images
+        # ImageSink.images_metadata_kv_pairs = '' (for now)
+        # ImageSink.additional_annotation = None/null (for now)
       min_items: 1
       required: true
 
@@ -411,7 +420,9 @@ CZBIRDProcessedPipeline:
     input_data_url:
       type: array
       items:
-        # PID-URL or Invenio internal ref (qqqqq-wwwww) to input image data
+        # PID, that's URL-like, to input image data
+        # Invenio internal ref (qqqqq-wwwww) alone is URI/IRI,
+        #         so it must be used with full hostname...
         type: keyword
       min_items: 1
       required: true
@@ -436,7 +447,9 @@ CZBIRDAnalysedPipeline:
     input_data_url:
       type: array
       items:
-        # PID-URL or Invenio internal ref (qqqqq-wwwww) to input image data
+        # PID, that's URL-like, to input image data
+        # Invenio internal ref (qqqqq-wwwww) alone is URI/IRI,
+        #         so it must be used with full hostname...
         type: keyword
       min_items: 1
       required: true
