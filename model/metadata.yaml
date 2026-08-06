@@ -38,54 +38,6 @@ CZBIRDOntologyTerm:
       type: boolean
       required: true
 
-CZBIRDResourceAnnotation:
-  # Flattened from $Resource + $RelatedResource
-  type: object
-  properties:
-    resource_iri: # implements has_identifier relation
-      # optional list of (alternative, official) _identifiers_ (names) of this resource
-      type: array
-      items:
-        type: keyword  #TODO: should be CCMM.Identifier
-      # the array itself is not required; but
-      # if it is present, it has to contain something
-      min_items: 1
-    resource_url:
-      # optional _location_ to this resource
-      type: keyword
-    time_reference:
-      # optional
-      type: array
-      items:
-        type: keyword  #TODO: should be CCMM.TimeReference
-      # the array itself is not required; but
-      # if it is present, it has to contain something
-      min_items: 1
-    location:
-      # optional
-      type: array
-      items:
-        type: keyword  #TODO: should be CCMM.Location
-      # the array itself is not required; but
-      # if it is present, it has to contain something
-      min_items: 1
-    delivered_by:
-      # optional
-      type: array
-      items:
-        type: keyword  #TODO: should be CCMM.Person or CCMM.ResourceAttribution
-      # the array itself is not required; but
-      # if it is present, it has to contain something
-      min_items: 1
-    additional_note:
-      # optional
-      type: array
-      items:
-        type: fulltext
-      # the array itself is not required; but
-      # if it is present, it has to contain something
-      min_items: 1
-
 CZBIRDDigitalObjectSink:
   # Resource.title is replaced here by data_label
   type: object
