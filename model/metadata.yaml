@@ -183,21 +183,13 @@ CZBIRDMethod:
       required: true
     additional_note:
       # optional
+      # this is an additional (and optional) clarification of the ontology term
       type: array
       items:
         type: fulltext
       # the array itself is not required; but
       # if it is present, it has to contain something
       min_items: 1
-    method_description:
-      type: polymorphic
-      discriminator: description_type
-      required: true
-      oneof:
-        - discriminator: explicit_description
-          type: CZBIRDFulltextDescription
-        - discriminator: reference_to_description
-          type: CZBIRDReference
 
 CZBIRDTool:
   type: object
@@ -217,6 +209,7 @@ CZBIRDTool:
           type: CZBIRDFulltextDescription
         - discriminator: reference_to_description
           type: CZBIRDReference
+          # this variant has strong overlap with this.additional_annotation.resource_url
     additional_annotation:
       type: CZBIRDResourceAnnotation
       required: true

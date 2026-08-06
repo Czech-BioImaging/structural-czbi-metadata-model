@@ -131,20 +131,18 @@ ProcessingStep:                       -- needs to be "instantiated" with per-ste
                                       --  >=0 for SamplePreparationStep, >=1 for all other steps
 
 Method:
-- $MethodsAndTools
+- [ Title, <=1 ]                      -- title of this particular item, which is not a CCMM-wrapped full record
 - [ MethodTypeLabel: OntologyTerm, >=1 ]
+- [ AdditionalNote, >=0 ]             -- additional (and optional) clarification of the method ontology term
 
 Tool:
-- $MethodsAndTools
-- [ IsSoftware: boolean, =1 ]
-
-MethodsAndTools:
 - $Resource                           -- title+addNote of the specific methodology or tool
                                       -- Resource.IRIs/URL,Location,Time,Person is NOT used for Method, it is used only for Tool
 - OneOf [ Description: pair(str), =1 ], [ URL: str, =1 ]
                                       -- explains the methodology/tool verbosely, or outsources the description by providing an URL to the description
                                       -- Description-variant is a multi-line text area
                                       -- URL-variant is a single-line form (for one URL)
+- [ IsSoftware: boolean, =1 ]
 
 Description:
 - protocol_name: str, =1
