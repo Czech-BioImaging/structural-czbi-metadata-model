@@ -38,77 +38,18 @@ CZBIRDOntologyTerm:
       type: boolean
       required: true
 
-CZBIRDResourceAnnotation:
-  # Flattened from $Resource + $RelatedResource
-  type: object
-  properties:
-    resource_iri: # implements has_identifier relation
-      # optional list of (alternative, official) _identifiers_ (names) of this resource
-      type: array
-      items:
-        type: keyword  #TODO: should be CCMM.Identifier
-      # the array itself is not required; but
-      # if it is present, it has to contain something
-      min_items: 1
-    resource_url:
-      # optional _location_ to this resource
-      type: keyword
-    time_reference:
-      # optional
-      type: array
-      items:
-        type: keyword  #TODO: should be CCMM.TimeReference
-      # the array itself is not required; but
-      # if it is present, it has to contain something
-      min_items: 1
-    location:
-      # optional
-      type: array
-      items:
-        type: keyword  #TODO: should be CCMM.Location
-      # the array itself is not required; but
-      # if it is present, it has to contain something
-      min_items: 1
-    delivered_by:
-      # optional
-      type: array
-      items:
-        type: keyword  #TODO: should be CCMM.Person or CCMM.ResourceAttribution
-      # the array itself is not required; but
-      # if it is present, it has to contain something
-      min_items: 1
-    additional_note:
-      # optional
-      type: array
-      items:
-        type: fulltext
-      # the array itself is not required; but
-      # if it is present, it has to contain something
-      min_items: 1
-
 CZBIRDDigitalObjectSink:
   # Resource.title is replaced here by data_label
   type: object
   properties:
-    data_label:
-      # substitutes Resource.title
-      type: keyword
-      required: true
     data_path:
       type: keyword
-      required: true
-    additional_annotation:
-      type: CZBIRDResourceAnnotation
       required: true
 
 CZBIRDDigitalImageSink:
   # Resource.title is replaced here by images_label
   type: object
   properties:
-    images_label:
-      # substitutes Resource.title
-      type: keyword
-      required: true
     images_path:
       type: keyword
       required: true
@@ -116,9 +57,6 @@ CZBIRDDigitalImageSink:
       # optional
       # format: "key1=value1;key2=value2;..." — all metadata from uploaded image files
       type: keyword
-    additional_annotation:
-      type: CZBIRDResourceAnnotation
-      required: true
 
 # ---------------------------------------------------------------------------
 # Biological identity chain: OntologyTerm → Taxon → Organism → Specimen
@@ -160,9 +98,18 @@ CZBIRDSpecimen:
         type: CZBIRDOntologyTerm
       min_items: 1
       required: true
-    additional_annotation:
-      type: CZBIRDResourceAnnotation
-      required: true
+    date_of_collection:  # only here to match with Figma_v1.2, but slatted for removal
+      type: keyword
+    place_of_collection: # only here to match with Figma_v1.2, but slatted for removal
+      type: keyword
+    additional_note:
+      # optional
+      type: array
+      items:
+        type: fulltext
+      # the array itself is not required; but
+      # if it is present, it has to contain something
+      min_items: 1
 
 # ---------------------------------------------------------------------------
 # Method and Tool (both flatten $MethodsAndTools which flattens $Resource)
@@ -172,9 +119,6 @@ CZBIRDSpecimen:
 CZBIRDMethod:
   type: object
   properties:
-    title:
-      # optional
-      type: fulltext+keyword
     method_type_label:
       type: array
       items:
@@ -194,9 +138,6 @@ CZBIRDMethod:
 CZBIRDTool:
   type: object
   properties:
-    title:
-      # optional
-      type: fulltext+keyword
     is_software:
       type: boolean
       required: true
@@ -210,9 +151,14 @@ CZBIRDTool:
         - discriminator: reference_to_description
           type: CZBIRDReference
           # this variant has strong overlap with this.additional_annotation.resource_url
-    additional_annotation:
-      type: CZBIRDResourceAnnotation
-      required: true
+    additional_note:
+      # optional
+      type: array
+      items:
+        type: fulltext
+      # the array itself is not required; but
+      # if it is present, it has to contain something
+      min_items: 1
 
 CZBIRDFulltextDescription:
   type: object
