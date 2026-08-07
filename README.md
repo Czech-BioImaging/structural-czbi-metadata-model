@@ -28,11 +28,14 @@ The model is expressed here in various formats and folders:
   - Includes also `metadata.txt` in succinct, yet somewhat obvious specification
 - Includes also example payload `.json` files that can be sent to backend API
   - [`scripts`](/scripts) to test submission of record drafts, etc.
-- [`czbird-py`](/czbird-py) as Python package `czbird` for JSON payloads
-  - [`model_python`](/model_python) with `pixi` environment for Python playground
 
 External resources from this GH organization:
 
 - [Rendered specification of the model](https://czech-bioimaging.github.io/bioimaging-metadata-model-specification/en/)
 - [Dataspecer project(s) backup(s)](https://github.com/Czech-BioImaging/conceptual-czbi-metadata-model)
 
+### API For Python Programmers
+
+There exists a [`czbird-py` repository](https://github.com/Czech-BioImaging/czbird-py)
+that allows to construct valid in-memory Python objects according to this model,
+and dump them into a `.json` metadata record, or create the objects from such a record.
