@@ -32,9 +32,10 @@ SCALAR = {
     "time": "str",
 }
 
-# Maps a profile class name -> its discriminator literal value, filled while
-# parsing the polymorphic root field.
-PROFILE_DISCRIMINATOR: dict[str, str] = {}
+# Maps a polymorphic member class name -> (discriminator_field, literal_value),
+# filled while parsing every polymorphic field (on any class, not just
+# Metadata). Each member class gets a Literal[...] on its discriminator field.
+POLY_MEMBER_DISCRIMINATOR: dict[str, tuple[str, str]] = {}
 
 
 def is_czbird(t: str) -> bool:
@@ -71,9 +72,12 @@ def render_field(name: str, spec: dict) -> tuple[str, str]:
             field = f"Field({', '.join(constraints)})" if constraints else "Field(...)"
             return ann, field
         else:
-            # optional array -> default empty list
-            joined = ", ".join(["default_factory=list", *constraints])
-            return f"{ann}", f"Field({joined})"
+            # Optional array: the field may be absent (None), but if present it
+            # must satisfy min_items — an empty list is NOT allowed. So default
+            # to None (not []), and keep the min_length/max_length constraints,
+            # which apply only when a list is actually provided.
+            joined = ", ".join(["default=None", *constraints])
+            return f"Optional[{ann}]", f"Field({joined})"
 
     if t in SCALAR:
         ann = SCALAR[t]
@@ -91,8 +95,9 @@ def render_object(name: str, body: dict) -> str:
     props = body.get("properties", {})
     lines = [f"class {name}(_Base):"]
 
-    # Special-case: profile classes carry a fixed profile_type literal.
-    disc_value = PROFILE_DISCRIMINATOR.get(name)
+    # If this class is a member of some polymorphic union, it carries a fixed
+    # Literal on its discriminator field (e.g. profile_type / description_type).
+    disc_field, disc_value = POLY_MEMBER_DISCRIMINATOR.get(name, (None, None))
 
     if not props:
         lines.append("    pass")
@@ -100,10 +105,19 @@ def render_object(name: str, body: dict) -> str:
 
     body_lines: list[str] = []
     for pname, spec in props.items():
-        if pname == "profile_type" and disc_value is not None:
+        if pname == disc_field and disc_value is not None:
             body_lines.append(
-                f'    profile_type: Literal["{disc_value}"] = Field(...)'
+                f'    {pname}: Literal["{disc_value}"] = Field(...)'
             )
+            continue
+        if spec.get("type") == "polymorphic":
+            # Inline polymorphic field on a regular class: emit its union alias.
+            alias, _ = render_polymorphic_alias(spec)
+            if spec.get("required", False):
+                body_lines.append(f"    {pname}: {alias} = Field(...)")
+            else:
+                body_lines.append(
+                    f"    {pname}: Optional[{alias}] = Field(default=None)")
             continue
         ann, field = render_field(pname, spec)
         body_lines.append(f"    {pname}: {ann} = {field}")
@@ -113,12 +127,17 @@ def render_object(name: str, body: dict) -> str:
 
 
 def render_polymorphic_alias(field_spec: dict) -> tuple[str, list[str]]:
-    """Return (union_type_expr, member_class_names) for a polymorphic field."""
+    """Return (union_type_expr, member_class_names) for a polymorphic field.
+
+    Records, for each member class, which discriminator field it must carry and
+    the literal value it takes there — so member classes on any polymorphic
+    union (not only Metadata's profiles) get the right Literal[...] injected.
+    """
     disc = field_spec.get("discriminator", "type")
     members = []
     for branch in field_spec["oneof"]:
         cls = branch["type"]
-        PROFILE_DISCRIMINATOR[cls] = branch["discriminator"]
+        POLY_MEMBER_DISCRIMINATOR[cls] = (disc, branch["discriminator"])
         members.append(cls)
     union = " | ".join(members)
     alias = f'Annotated[{union}, Field(discriminator="{disc}")]'
@@ -129,8 +148,17 @@ def main(path: str, out_path: str = "czbird_model.py") -> None:
     with open(path) as f:
         schema = yaml.safe_load(f)
 
-    # First pass: discover the polymorphic root field so profile classes know
-    # their discriminator literals before we render them.
+    # Discovery pass: scan EVERY class (not just Metadata) for polymorphic
+    # fields, so each union member's discriminator field+literal is registered
+    # before any class is rendered — regardless of definition order. This makes
+    # polymorphic fields work on regular classes (e.g. CZBIRDTool.tool_description),
+    # not only on the Metadata root.
+    for cname, cbody in schema.items():
+        for pname, spec in (cbody.get("properties", {}) or {}).items():
+            if isinstance(spec, dict) and spec.get("type") == "polymorphic":
+                render_polymorphic_alias(spec)
+
+    # The root's polymorphic field alias (was_generated_by) for the Metadata body.
     root = schema["Metadata"]
     poly_alias = None
     for pname, spec in root["properties"].items():
