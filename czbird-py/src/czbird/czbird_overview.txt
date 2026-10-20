@@ -1,0 +1,49 @@
+Metadata
+└── was_generated_by ──> «one of» (discriminated on profile_type)
+    ├── CZBIRDRawDataProfile
+    │   └── raw_data [] ──> CZBIRDRawPipeline
+    │       ├── specimen ──> CZBIRDSpecimen
+    │       │   ├── is_part_of_organism ──> CZBIRDOrganism
+    │       │   │   └── belongs_to ──> CZBIRDTaxon
+    │       │   │       ├── accepted_scientific_name ──> CZBIRDOntologyTerm
+    │       │   │       └── taxon_rank ────────────────> CZBIRDOntologyTerm
+    │       │   └── is_part_of [] ──> CZBIRDOntologyTerm
+    │       ├── sample_preparation_step [] ──> CZBIRDSamplePreparationStep
+    │       │   ├── realizes_method ──> CZBIRDMethod
+    │       │   │   └── method_type_label [] ──> CZBIRDOntologyTerm
+    │       │   ├── employs_tool ──> CZBIRDTool
+    │       │   └── digital_object_sink [] ──> CZBIRDDigitalObjectSink
+    │       └── image_acquisition_step [] ──> CZBIRDImageAcquisitionStep
+    │           ├── realizes_method ──> CZBIRDMethod
+    │           │   └── method_type_label [] ──> CZBIRDOntologyTerm
+    │           ├── employs_tool ──> CZBIRDTool
+    │           └── digital_image_sink ──> CZBIRDDigitalImageSink
+    │
+    ├── CZBIRDProcessedDataProfile
+    │   └── processed_data [] ──> CZBIRDProcessedPipeline
+    │       ├── image_processing_step [] ──> CZBIRDImageProcessingStep
+    │       │   ├── realizes_method ──> CZBIRDMethod
+    │       │   │   └── method_type_label [] ──> CZBIRDOntologyTerm
+    │       │   ├── employs_tool ──> CZBIRDTool
+    │       │   ├── digital_object_sink [] ──> CZBIRDDigitalObjectSink
+    │       │   └── digital_image_sink  [] ──> CZBIRDDigitalImageSink
+    │       └── result_data [] ──> CZBIRDDigitalImageSink
+    │
+    ├── CZBIRDAnalysedDataProfile
+    │   └── analysed_data [] ──> CZBIRDAnalysedPipeline
+    │       ├── image_processing_step [] ──> CZBIRDImageProcessingStep
+    │       │   ├── realizes_method ──> CZBIRDMethod
+    │       │   │   └── method_type_label [] ──> CZBIRDOntologyTerm
+    │       │   ├── employs_tool ──> CZBIRDTool
+    │       │   ├── digital_object_sink [] ──> CZBIRDDigitalObjectSink
+    │       │   └── digital_image_sink  [] ──> CZBIRDDigitalImageSink
+    │       ├── image_analysis_step  [] ──> CZBIRDImageAnalysisStep
+    │       │   ├── realizes_method ──> CZBIRDMethod
+    │       │   │   └── method_type_label [] ──> CZBIRDOntologyTerm
+    │       │   ├── employs_tool ──> CZBIRDTool
+    │       │   ├── digital_object_sink [] ──> CZBIRDDigitalObjectSink
+    │       │   └── digital_image_sink  [] ──> CZBIRDDigitalImageSink
+    │       ├── result_data_objects [] ──> CZBIRDDigitalObjectSink
+    │       └── result_data_images  [] ──> CZBIRDDigitalImageSink
+    │
+    └── CZBIRDGeneralRecordProfile        (leaf: only profile_type, no CZBIRD refs)

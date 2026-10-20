@@ -1,252 +1,550 @@
-# Definition of metadata for equipment. Please do not add ccmm model here,
-# add the ccmm_preset instead.
+# CzBIRD metadata model — NRP Invenio schema
+# Converted from metadata.yaml (human-readable specification)
+#
+# Inheritance ($ProcessingStep, $MethodsAndTools) is flattened into
+# each concrete type since NRP has no inheritance mechanism.
+#
+# The $Resource -> $RelatedResource relation is flattened into a shortcut
+# entity $ResourceAnnotation (which exists only here, it is not present
+# in the official model), and it is referenced in the relevant types (not
+# flattened/pasted into them like it is with the $ProcessingStep). Only
+# the original (model's) Resource.Title is flattened into the types,
+# allowing the types to use their own names variant for it.
+#
+# Naming:
+#   custom types use PascalCase with CZBIRD prefix;
+#   property names use snake_case.
+
+# ---------------------------------------------------------------------------
+# Leaf types (no dependencies on other CZBIRD types)
+# ---------------------------------------------------------------------------
+
+CZBIRDOntologyTerm:
+  type: object
+  properties:
+    ontology_name:
+      type: keyword
+      required: true
+    ontology_version:
+      type: keyword
+      required: true
+    term_label:
+      type: keyword
+      required: true
+    term_iri:
+      type: keyword
+      required: true
+    term_is_definite:
+      type: boolean
+      required: true
+
+CZBIRDResourceAnnotation:
+  # Flattened from $Resource + $RelatedResource
+  type: object
+  properties:
+    resource_iri: # implements has_identifier relation
+      # optional list of (alternative, official) _identifiers_ (names) of this resource
+      type: array
+      items:
+        type: keyword  #TODO: should be CCMM.Identifier
+      # the array itself is not required; but
+      # if it is present, it has to contain something
+      min_items: 1
+    resource_url:
+      # optional _location_ to this resource
+      type: keyword
+    time_reference:
+      # optional
+      type: array
+      items:
+        type: keyword  #TODO: should be CCMM.TimeReference
+      # the array itself is not required; but
+      # if it is present, it has to contain something
+      min_items: 1
+    location:
+      # optional
+      type: array
+      items:
+        type: keyword  #TODO: should be CCMM.Location
+      # the array itself is not required; but
+      # if it is present, it has to contain something
+      min_items: 1
+    delivered_by:
+      # optional
+      type: array
+      items:
+        type: keyword  #TODO: should be CCMM.Person or CCMM.ResourceAttribution
+      # the array itself is not required; but
+      # if it is present, it has to contain something
+      min_items: 1
+    additional_note:
+      # optional
+      type: array
+      items:
+        type: fulltext
+      # the array itself is not required; but
+      # if it is present, it has to contain something
+      min_items: 1
+
+CZBIRDDigitalObjectSink:
+  # Resource.title is replaced here by data_label
+  type: object
+  properties:
+    data_label:
+      # substitutes Resource.title
+      type: keyword
+      required: true
+    data_path:
+      type: keyword
+      required: true
+    additional_annotation:
+      type: CZBIRDResourceAnnotation
+      required: true
+
+CZBIRDDigitalImageSink:
+  # Resource.title is replaced here by images_label
+  type: object
+  properties:
+    images_label:
+      # substitutes Resource.title
+      type: keyword
+      required: true
+    images_path:
+      type: keyword
+      required: true
+    images_metadata_kv_pairs:
+      # optional
+      # format: "key1=value1;key2=value2;..." — all metadata from uploaded image files
+      type: keyword
+    additional_annotation:
+      type: CZBIRDResourceAnnotation
+      required: true
+
+# ---------------------------------------------------------------------------
+# Biological identity chain: OntologyTerm → Taxon → Organism → Specimen
+# ---------------------------------------------------------------------------
+
+CZBIRDTaxon:
+  type: object
+  properties:
+    accepted_scientific_name:
+      type: CZBIRDOntologyTerm
+      required: true
+    taxon_rank:
+      # redundant but mandatory; value comes from the IRI of accepted_scientific_name
+      type: CZBIRDOntologyTerm
+      required: true
+
+CZBIRDOrganism:
+  type: object
+  properties:
+    belongs_to:
+      type: CZBIRDTaxon
+      required: true
+
+CZBIRDSpecimen:
+  # Flattened from $Resource + Specimen-specific fields
+  type: object
+  properties:
+    title:
+      # optional
+      type: fulltext+keyword
+    is_part_of_organism:
+      type: CZBIRDOrganism
+      required: true
+    is_part_of:
+      # ordered list from largest to smallest component; first element = "Specimen is",
+      # subsequent elements = "Specimen part of"
+      type: array
+      items:
+        type: CZBIRDOntologyTerm
+      min_items: 1
+      required: true
+    additional_annotation:
+      type: CZBIRDResourceAnnotation
+      required: true
+
+# ---------------------------------------------------------------------------
+# Method and Tool (both flatten $MethodsAndTools which flattens $Resource)
+# with OneOf [name+description] / [URL] attribute
+# ---------------------------------------------------------------------------
+
+CZBIRDMethod:
+  type: object
+  properties:
+    title:
+      # optional
+      type: fulltext+keyword
+    method_type_label:
+      type: array
+      items:
+        type: CZBIRDOntologyTerm
+      min_items: 1
+      required: true
+    additional_note:
+      # optional
+      # this is an additional (and optional) clarification of the ontology term
+      type: array
+      items:
+        type: fulltext
+      # the array itself is not required; but
+      # if it is present, it has to contain something
+      min_items: 1
+
+CZBIRDTool:
+  type: object
+  properties:
+    title:
+      # optional
+      type: fulltext+keyword
+    is_software:
+      type: boolean
+      required: true
+    tool_description:
+      type: polymorphic
+      discriminator: description_type
+      required: true
+      oneof:
+        - discriminator: explicit_description
+          type: CZBIRDFulltextDescription
+        - discriminator: reference_to_description
+          type: CZBIRDReference
+          # this variant has strong overlap with this.additional_annotation.resource_url
+    additional_annotation:
+      type: CZBIRDResourceAnnotation
+      required: true
+
+CZBIRDFulltextDescription:
+  type: object
+  properties:
+    description_type:
+      type: keyword
+      required: true
+    title:
+      type: fulltext+keyword
+      required: true
+    description:
+      type: fulltext
+      required: true
+
+CZBIRDReference:
+  type: object
+  properties:
+    description_type:
+      type: keyword
+      required: true
+    url:
+      type: keyword
+      required: true
+
+# ---------------------------------------------------------------------------
+# Processing steps (all flatten $ProcessingStep which has label/method/tool)
+# ---------------------------------------------------------------------------
+
+CZBIRDSamplePreparationStep:
+  type: object
+  properties:
+    step_label:
+      type: keyword
+      required: true
+    realizes_method:
+      type: CZBIRDMethod
+      required: true
+    employs_tool:
+      type: array
+      items:
+        type: CZBIRDTool
+      # min_items: 1 --> this step can be defined w/o a tool !!
+      required: true
+    aux_digital_object:
+      # optional, processing "side-effect" files, e.g.,
+      # room temperature, atm. pressure record, etc.
+      type: array
+      items:
+        type: CZBIRDDigitalObjectSink
+      # the array itself is not required; but
+      # if it is present, it has to contain something
+      min_items: 1
+
+CZBIRDImageAcquisitionStep:
+  type: object
+  properties:
+    step_label:
+      type: keyword
+      required: true
+    realizes_method:
+      type: CZBIRDMethod
+      required: true
+    employs_tool:
+      type: array
+      items:
+        type: CZBIRDTool
+      min_items: 1
+      required: true
+    aux_digital_object:
+      # optional, processing "side-effect" files, e.g. log files
+      type: array
+      items:
+        type: CZBIRDDigitalObjectSink
+        # how to fill this sink item?
+        # ObjectSink.data_label = the UI's Sample name plus " aux data"
+        # ObjectSink.data_path = specimen_name/sample_name/imaging_name/additional_files
+        # ObjectSink.additional_annotation = None/null (for now)
+      # the array itself is not required; but
+      # if it is present, it has to contain something
+      min_items: 1
+    main_digital_image:
+      # mandatory, and at least one
+      # (assuming! scopes are not producing aux debug images)
+      type: array
+      items:
+        type: CZBIRDDigitalImageSink
+        # how to fill this sink item?
+        # ImageSink.images_label = the UI's Sample name plus " acquired images"
+        # ImageSink.images_path = specimen_name/sample_name/imaging_name/images
+        # ImageSink.images_metadata_kv_pairs = '' (for now)
+        # ImageSink.additional_annotation = None/null (for now)
+      min_items: 1
+      required: true
+
+CZBIRDImageProcessingStep:
+  # represents a step whose primary purpose is to produce another
+  # batch of images that either is an input to another such step,
+  # or is recorded in CZBIRDProcessedPipeline.result_data_images
+  #
+  # (attrib-wise it is the same as CZBIRDImageAnalysisStep)
+  type: object
+  properties:
+    step_label:
+      type: keyword
+      required: true
+    realizes_method:
+      type: CZBIRDMethod
+      required: true
+    employs_tool:
+      type: array
+      items:
+        type: CZBIRDTool
+      min_items: 1
+      required: true
+    aux_digital_object:
+      # optional, processing "side-effect" files, e.g. log files
+      type: array
+      items:
+        type: CZBIRDDigitalObjectSink
+      # the array itself is not required; but
+      # if it is present, it has to contain something
+      min_items: 1
+    aux_digital_image:
+      # optional, processing "side-effect" files, e.g. debug images
+      type: array
+      items:
+        type: CZBIRDDigitalImageSink
+      # the array itself is not required; but
+      # if it is present, it has to contain something
+      min_items: 1
+
+CZBIRDImageAnalysisStep:
+  # represents a step whose primary purpose is to extract information
+  # out of (implicit) input image(s) and save this information
+  # in a form of CZBIRDAnalysedPipeline.result_data_objects or
+  # CZBIRDAnalysedPipeline.result_data_images
+  #
+  # (attrib-wise it is the same as CZBIRDImageProcessingStep)
+  type: object
+  properties:
+    step_label:
+      type: keyword
+      required: true
+    realizes_method:
+      type: CZBIRDMethod
+      required: true
+    employs_tool:
+      type: array
+      items:
+        type: CZBIRDTool
+      min_items: 1
+      required: true
+    aux_digital_object:
+      # optional, processing "side-effect" files, e.g. log files
+      type: array
+      items:
+        type: CZBIRDDigitalObjectSink
+      # the array itself is not required; but
+      # if it is present, it has to contain something
+      min_items: 1
+    aux_digital_image:
+      # optional, processing "side-effect" files, e.g. debug images
+      type: array
+      items:
+        type: CZBIRDDigitalImageSink
+      # the array itself is not required; but
+      # if it is present, it has to contain something
+      min_items: 1
+
+# ---------------------------------------------------------------------------
+# Profile content types (the actual pipelines carried by each profile)
+# ---------------------------------------------------------------------------
+
+CZBIRDRawPipeline:
+  type: object
+  properties:
+    specimen:
+      type: CZBIRDSpecimen
+      required: true
+    sample_preparation_step:
+      # optional
+      type: array
+      items:
+        type: CZBIRDSamplePreparationStep
+      # the array itself is not required; but
+      # if it is present, it has to contain something
+      min_items: 1
+    image_acquisition_step:
+      type: array
+      items:
+        type: CZBIRDImageAcquisitionStep
+      min_items: 1
+      required: true
+
+CZBIRDProcessedPipeline:
+  type: object
+  properties:
+    input_data_url:
+      type: array
+      items:
+        # PID, that's URL-like, to input image data
+        # Invenio internal ref (qqqqq-wwwww) alone is URI/IRI,
+        #         so it must be used with full hostname...
+        type: keyword
+      min_items: 1
+      required: true
+    image_processing_step:
+      # steps listed in execution order
+      type: array
+      items:
+        type: CZBIRDImageProcessingStep
+      min_items: 1
+      required: true
+    result_data_image:
+      # end-result images of the whole pipeline (intermediate outputs live in Steps)
+      type: array
+      items:
+        type: CZBIRDDigitalImageSink
+      min_items: 1
+      required: true
+
+CZBIRDAnalysedPipeline:
+  type: object
+  properties:
+    input_data_url:
+      type: array
+      items:
+        # PID, that's URL-like, to input image data
+        # Invenio internal ref (qqqqq-wwwww) alone is URI/IRI,
+        #         so it must be used with full hostname...
+        type: keyword
+      min_items: 1
+      required: true
+    image_processing_step:
+      # optional pre-analysis processing; listed in execution order
+      type: array
+      items:
+        type: CZBIRDImageProcessingStep
+      # the array itself is not required; but
+      # if it is present, it has to contain something
+      min_items: 1
+    image_analysis_step:
+      # listed in execution order
+      type: array
+      items:
+        type: CZBIRDImageAnalysisStep
+      min_items: 1
+      required: true
+    result_data_object:
+      # end-result non-image outputs; result_data_objects + result_data_images combined >= 1
+      type: array
+      items:
+        type: CZBIRDDigitalObjectSink
+      required: true
+    result_data_image:
+      # end-result image outputs; result_data_objects + result_data_images combined >= 1
+      type: array
+      items:
+        type: CZBIRDDigitalImageSink
+      required: true
+
+# ---------------------------------------------------------------------------
+# Record profiles — discriminated via profile_type for the polymorphic field
+# ---------------------------------------------------------------------------
+
+CZBIRDRawDataProfile:
+  type: object
+  properties:
+    profile_type:
+      type: keyword
+      required: true
+    raw_data_acquisition:
+      type: array
+      items:
+        type: CZBIRDRawPipeline
+      min_items: 1
+      required: true
+
+CZBIRDProcessedDataProfile:
+  type: object
+  properties:
+    profile_type:
+      type: keyword
+      required: true
+    data_processing:
+      type: array
+      items:
+        type: CZBIRDProcessedPipeline
+      min_items: 1
+      required: true
+
+CZBIRDAnalysedDataProfile:
+  type: object
+  properties:
+    profile_type:
+      type: keyword
+      required: true
+    data_analysing:
+      type: array
+      items:
+        type: CZBIRDAnalysedPipeline
+      min_items: 1
+      required: true
+
+CZBIRDGeneralRecordProfile:
+  # No extra metadata beyond the top-level Metadata fields and CCMM/RO-Crate data
+  type: object
+  properties:
+    profile_type:
+      type: keyword
+      required: true
+
+# ---------------------------------------------------------------------------
+# Root metadata blueprint
+# ---------------------------------------------------------------------------
 
 Metadata:
   properties:
-    # CCMM is since v4.0.0 available implicitly, that said,
-    # I didn't have to mention it here, yet I could provide
-    # payload data according to CCMM specs (and Invenio didn't
-    # complained)
-    #
-    # PS: I created CCMM record first in the Invenio (in www
-    # GUI), and retrieved the record from there to learn about
-    # the .json structure...
-    #
-    title:
+    internal_record_title:
       type: fulltext+keyword
-# ------------------------------
-# Model pro tzv. RAW records
-# ------------------------------
-    specimen:
-      type: CZBISpecimen
       required: true
-    sample_preparation:
-      type: array
-      items:
-        type: CZBIActivitySamplePreparation
-      # i kdyby to pole melo byt prazdne, necht je tam vzdy explicitne uvedeno
-      required: true
-    image_acquisition:
-      type: CZBIActivityImageAcquisition
-      required: true
-    poly_data:
+    was_generated_by:
+      # exactly one profile must be chosen; profile_type is the discriminator
       type: polymorphic
-      discriminator: type_hint
+      discriminator: profile_type
+      required: true
       oneof:
-        - discriminator: person
-          type: CZBI_Person
-        - discriminator: organization
-          type: CZBI_Organization
-# ------------------------------
-
-CZBI_Person:
-  type: object
-  properties:
-    type_hint: # must be here to make oarepo not to skip this required field during parsing
-      type: keyword
-    person_name:
-      type: keyword
-    person_email:
-      type: keyword
-
-CZBI_Organization:
-  type: object
-  properties:
-    type_hint: # must be here to make oarepo not to skip this required field during parsing
-      type: keyword
-    org_name:
-      type: keyword
-    org_addr:
-      type: keyword
-
-
-# Hints for Vlado:
-# keyword: exact-match, not broken into tokens, "as-is"
-#    Perfect for IDs, status values, categories, tags, and structured data where you need precise matching
-#
-# fulltext: into tokens, supports synonyms, relevance scoring -- full-text search
-#    Ideal for descriptions, abstracts... search within the content rather than match exactly
-#
-# fulltext+keyword: does both above
-#    Perfect for titles, names, and other text that needs both search functionality and precise filtering/faceting
-
-
-# Trida reprezentuje jeden fyzicky vzorek (jednu instanci), ktery se posleze
-# snimal a ktery je tedy zobrazen v deponovanych "raw" datech. Vedec mohl mit
-# vice instanci stejne popsanych vzorku. Napriklad, vedec posbiral 4 vzorky
-# bunek tlusteho streva, kazdy vzorek nasnimal samostatne a kazdy je deponovan
-# samostatne; tzn. jeden vzorek = jeden Invenio record. Nicmene, v tomto
-# priklade jsou vsechny 4 vzorky popsany stejne, pouziji se stejne hodnoty
-# v atributech teto tridy az na 'specimen_name', pomoci ktereho si vedec
-# rozlisuje mezi temi 4mi vzorkami.
-CZBISpecimen:
-  type: nested
-  properties:
-    specimen_name:
-      # Pojmenovani ci oznaceni fyzickeho vzorku, ktery se nachysta pro
-      # experiment a pro snimani; to chystani se deje v a je popsano
-      # pomoci nasledujicich CZBIActivitySamplePreparation objektu.
-      #
-      # Hodnota neni obsahove nejak omezena, neni od nikud vybirana.
-      type: fulltext+keyword
-      label: Specimen label
-      required: true
-    specimen_is:
-      # Specimen (vzorek) je vzdy typove nejaka biologicka entita,
-      # napr. Kostni dren, Hepa bunka, Jatro z byka nekuraka :)
-      #
-      # Hodnota bude z ontologie/slovniku.
-      #
-      # Hrozi, ze casem bude nejprve vyber slovniku a hodnota potom bude
-      # z vybraneho slovniku (nyni ale v modelu neni atribut na ulozeni
-      # zvoleneho slovniku, ze ktereho hodnota prisla).
-      type: keyword
-      label: Biological entity
-      hint: Single-choice Dropbox ze seznamu od Vlada (TBA)
-      required: true
-    specimen_part_of:
-      # Nekdy 'specimen_is' neposkytuje dostatecne urceni, napriklad
-      # 'Embryonic Stem Cell' nestaci, musi se rict z jakeho druhu embrya;
-      # to se prave doplnuje tady.
-      #
-      # Hodnoty se budou nabirat uplne stejne jako pro 'specimen_is'.
-      type: array
-      items:
-        type: keyword
-        label: Additional biological entity
-        hint: Single-choice Dropbox ze seznamu od Vlada (TBA)
-    taxon:
-      # Specimen je sice biologicka entita, ale ta je bud synteticka/umela
-      # (coz je nyni z modelu vynechano) nebo pochazi z nejakeho existujiciho
-      # druhu - zivocicha ci rostliny; taxon urcuje jaky druh zivocicha ci
-      # rostliny to je.
-      #
-      # Hodnota bude z jedine ontologie/slovniku.
-      type: keyword
-      label: Taxon of the entity
-      hint: Single-choice Dropbox ze seznamu od Vlada (TBA)
-      required: true
-    additional_info:
-      # Nekdy to jeste nestaci na dopresneni specimenu (vzorku), napriklad
-      # chceme umoznit vedcum dopsat, ze treba ta Hepa bunka byla sesbirana
-      # ze samcich embrii ve veku 100-140 hpf a navic tech, ktere se narodili
-      # tak ci onak -- na tyhle detaily (defacto uz vlastne parametry experimentu)
-      # proste nejsou ontologie, ani se to neda postihnout nejakou beznou entitou.
-      #
-      # Hodnota neni obsahove nejak omezena, neni od nikud vybirana.
-      type: fulltext
-      label: Furher description
-      hint: The place for additional experimental settings
-
-
-# Trida reprezentuje cinnost, kterou vedec "provedl vzorku" jeste predtim
-# nez vzorek zalozil a nasnimal mikroskopem. Je to "pojitko/pribeh" mezi
-# "inicialnim obstaranym vzorkem" (popsanym v 'CZBISpecimen') a jeho
-# "digitalizaci" (popsane v 'CZBIActivityImageAcquisition'), a ma to vliv
-# na pochopeni co presne je potom v depovanych obrazech zobrazeno. Tento
-# "pribeh" nemusi existovat (napriklad "specimen je smitko prachu z parapetu,
-# ktere jsem rovnou vlozil do mikroskopu"; cili neprobehla zadna priprava
-# vzorku), nebo se naopak muze skladat z mnoha dilcich pribehu (posloupnost
-# 'CZBIActivitySamplePreparation'). Granularita popisu pribehu a pocet dilcich
-# pribehu neni zamerne definovano, je to ponechano na vedcove odhadu.
-CZBIActivitySamplePreparation:
-  type: nested
-  properties:
-    protocol_type:
-      # Obecny typ/charakter relevantni prace se vzorkem, jako napriklad
-      # dodatecna biologicka/chemicka manipulace (napr. barveni, vymyvani
-      # barev, odstredovani, zahrivani, smichavani s cinidly atp.) nebo
-      # fyzikalni (orezavani, fixace atp.). Trochu si prejeme, aby diky
-      # teto kategorizaci cinnosti byl vedec nucen se rozepsat pres vice
-      # "dilcich pribehu". Muze potom snadno tyto "bloby" recyklovat pri
-      # vytvareni sister-recordu: Predstavme si kontrolni a experimentalni
-      # datovou sadu -- tyto vznikaji do znacne miry spolecne ze stejneho
-      # typu specimenu, ale s vyjimkou nejakeho "disturbance" specialniho
-      # kroku v priprave u experimentalni sady.
-      #
-      # Hodnota bude z ontologie/slovniku.
-      #
-      # Hrozi, ze casem bude nejprve vyber slovniku a hodnota potom bude
-      # z vybraneho slovniku (nyni ale v modelu neni atribut na ulozeni
-      # zvoleneho slovniku, ze ktereho hodnota prisla).
-      type: keyword
-      label: Protocol type
-      hint: Single-choice Dropbox ze seznamu od Vlada (TBA)
-      required: true
-    description:
-      # Precizni a reproducibilni popis relevantni prace se vzorkem, jako
-      # napriklad popis dodatecne biologicke ci chemicke manipulace (napr.
-      # barveni, vymyvani barev, odstredovani, zahrivani, smichavani s cinidly
-      # atp.) nebo fyzikalni (orezavani, fixace atp.). Dobrym prikladem jsou
-      # sekce "Materials and Methods" z clanku.
-      #
-      # Hodnota neni obsahove nejak omezena, neni od nikud vybirana
-      # a popis bude spise dlouhy, klidne i maly pocet stran textu
-      # (pokud se vedec rozhodne delat velkou granularitu).
-      type: fulltext
-      label: Protocol details
-      hint: The place for main detailed description
-      required: true
-    additional_info:
-      # Pokud se vedec rozhodne, a my bychom to tak radi videli, znovu-pouzivat
-      # sve "bloby" z 'description', ma zde moznost uvest pripadne mirne odchylky.
-      # Da se to chapat i tak, ze celkovy popis tohoto "pribehu" je logicky
-      # rozlozeny pres dva useky, tzn. pres 'description' + 'additional_info',
-      # kde 'description' je urcity spolecny, re-usable blob popisu.
-      #
-      # Hodnota neni obsahove nejak omezena, neni od nikud vybirana
-      # a popis bude spise dlouhy, klidne i maly pocet stran textu
-      # (pokud se vedec rozhodne delat velkou granularitu).
-      type: fulltext
-      label: Furher description
-      hint: The place for additional specific description
-
-
-# Trida popisuje instrument, kterym se fyzicky vzorek zobrazil
-# do pocitace. Typicky byl vlozen do mikroskopu a vyfocen.
-CZBIActivityImageAcquisition:
-  type: nested
-  properties:
-    imaging_type:
-      # ('imaging_type' je "metoda aktivity")
-      #
-      # Popis druhu mikroskopie, napriklad LSCM, TRIF, FLIM, FRAP, atd.
-      # Popis bude typicky ve formatu Laser-scanning Confocal Microscopy (LSCM),
-      # tzn. rozvinuty slovnik popis a jeho bezne znama zkratka.
-      #
-      # Hodnota bude z jedine ontologie/slovniku.
-      type: keyword
-      label: Microscopy technique
-      hint: Single-choice Dropbox ze seznamu od Vlada (TBA)
-      required: true
-    instrument:
-      # ('instrument' je "tool aktivity")
-      #
-      # V CzBI se planuje vytvorit ciselnik vsech mikroskopu, ktere se
-      # pouzivaji... proste List< PairOf<int,string> >, kde je (v ramci
-      # toho ciselniku) jedinecne ID a potom pomerne dlouhy (10+ slov)
-      # popis toho konkretniho pristroje. Predstavoval bych si casem
-      # vkladat do Invenia neco jako f"({id}) {string}", tzn. ulozit
-      # ID stroje a jeho soudoby popis.
-      #
-      # Hodnota bude z jedine ontologie/slovniku.
-      type: fulltext+keyword
-      label: Instrument used
-      hint: Cut-and-paste here from the external list of all available instruments
-      required: true
-    additional_info:
-      # Pristroj muze byt pro dane snimani specificky nastaven. Takoveto
-      # nastaveni je vlastne odchylka od popisu pristroje v 'instrument',
-      # a je treba to zde zadokumentovat (pri vyhledavani se to ale bude
-      # bit...). Plati tez: Takoveto nastaveni je vlastne doplneni popisu
-      # pristroje z 'instrument' (to sice nebude delat rozpory uvnitr recordu,
-      # ale i tak jsou zase/porad dve polozky pres ktere je nutno vyhledavat
-      # pokud se budou hledat data nasnimana napr. konkretnim typem objektivu
-      # nebo vlnovou delkou laseru). Bude zalezet jak detailne vedci nadefinuji
-      # sve pristroje pro 'instrument'.
-      #
-      # Hodnota neni obsahove nejak omezena, neni od nikud vybirana.
-      type: fulltext+keyword
-      label: Additional instrument setting
-      hint: List here all non-standard settings of the instrument
-
+        - discriminator: raw_data
+          type: CZBIRDRawDataProfile
+        - discriminator: processed_data
+          type: CZBIRDProcessedDataProfile
+        - discriminator: analysed_data
+          type: CZBIRDAnalysedDataProfile
+        - discriminator: general_record
+          type: CZBIRDGeneralRecordProfile

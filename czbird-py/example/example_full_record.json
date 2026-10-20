@@ -1,0 +1,134 @@
+{
+  "record_title": "Confocal imaging of adult mouse brain (example record)",
+  "additional_note": [
+    "Fully fictional data for documentation purposes."
+  ],
+  "publication_year": 2025,
+  "version": 1.0,
+  "was_generated_by": {
+    "profile_type": "rawData",
+    "raw_data": [
+      {
+        "specimen": {
+          "title": "Coronal section of adult mouse brain",
+          "additional_note": [
+            "8-week-old male",
+            "fixed within 2 h of extraction"
+          ],
+          "internal_id": "zm12xn",
+          "is_part_of_organism": {
+            "belongs_to": {
+              "accepted_scientific_name": {
+                "ontology_name": "NCBITaxon",
+                "ontology_version": "2024-01",
+                "term_label": "Mus musculus",
+                "term_iri": "http://purl.obolibrary.org/obo/NCBITaxon_10090",
+                "term_is_definite": true
+              },
+              "taxon_rank": {
+                "ontology_name": "NCBITaxon",
+                "ontology_version": "2024-01",
+                "term_label": "species",
+                "term_iri": "http://purl.obolibrary.org/obo/NCBITaxon_rank_species",
+                "term_is_definite": true
+              }
+            }
+          },
+          "is_part_of": [
+            {
+              "ontology_name": "UBERON",
+              "ontology_version": "2023-09",
+              "term_label": "brain",
+              "term_iri": "http://purl.obolibrary.org/obo/UBERON_0000955",
+              "term_is_definite": true
+            },
+            {
+              "ontology_name": "UBERON",
+              "ontology_version": "2023-09",
+              "term_label": "head-skull",
+              "term_iri": "http://purl.obolibrary.org/obo/xyz",
+              "term_is_definite": false
+            }
+          ]
+        },
+        "sample_preparation_step": [
+          {
+            "step_label": "Fixation and vibratome sectioning",
+            "realizes_method": {
+              "title": "Paraformaldehyde fixation",
+              "additional_note": [],
+              "internal_id": "cMkNK6",
+              "description": "Immersion fixation in 4% PFA for 24 h at 4 degC.",
+              "iri": "http://example.org/methods/pfa-fixation",
+              "method_type_label": [
+                {
+                  "ontology_name": "OBI",
+                  "ontology_version": "2023-05",
+                  "term_label": "chemical fixation",
+                  "term_iri": "http://purl.obolibrary.org/obo/OBI_0302893",
+                  "term_is_definite": true
+                }
+              ]
+            },
+            "employs_tool": {
+              "title": "Leica VT1200S vibratome",
+              "additional_note": [],
+              "internal_id": "KtmVDm",
+              "description": "Used to cut 50 um coronal sections.",
+              "iri": "http://example.org/tools/vt1200s",
+              "is_software": false
+            },
+            "digital_object_sink": [
+              {
+                "additional_note": [
+                  "sectioning log as CSV"
+                ],
+                "internal_id": "Dg2IJJ",
+                "data_label": "Sectioning protocol log",
+                "data_path": "s3://czbi-example/prep/sectioning_log.csv"
+              }
+            ]
+          }
+        ],
+        "image_acquisition_step": [
+          {
+            "step_label": "Confocal z-stack acquisition",
+            "realizes_method": {
+              "title": "Confocal acquisition",
+              "additional_note": [],
+              "internal_id": "2HYOSg",
+              "description": "Z-stack, 0.5 um step, 40x oil objective.",
+              "iri": "http://example.org/methods/confocal-zstack",
+              "method_type_label": [
+                {
+                  "ontology_name": "FBbi",
+                  "ontology_version": "2020-11",
+                  "term_label": "confocal laser scanning microscopy",
+                  "term_iri": "http://purl.obolibrary.org/obo/FBbi_00000251",
+                  "term_is_definite": true
+                }
+              ]
+            },
+            "employs_tool": {
+              "title": "Zeiss LSM 900 confocal microscope",
+              "additional_note": [],
+              "internal_id": "fFs6ao",
+              "description": "Point-scanning confocal system.",
+              "iri": "http://example.org/tools/lsm900",
+              "is_software": false
+            },
+            "digital_image_sink": {
+              "additional_note": [
+                "16-bit, 2 channels (DAPI, GFP)"
+              ],
+              "internal_id": "7ZLxLD",
+              "images_label": "Raw confocal z-stack",
+              "images_path": "s3://czbi-example/raw/stack_0001.czi",
+              "images_metadata_kv_pairs": "pixel_size_um=0.16; channels=DAPI,GFP; bit_depth=16"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
